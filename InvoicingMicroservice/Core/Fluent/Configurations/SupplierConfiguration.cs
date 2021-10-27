@@ -16,19 +16,19 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
             modelBuilder.Property(s => s.Id).IsRequired();
 
             modelBuilder.Property(s => s.Nip).HasMaxLength(10).IsRequired();
-            modelBuilder.Property(s => s.Code).HasMaxLength(6).IsRequired();
+            modelBuilder.Property(s => s.Code).HasMaxLength(6).IsRequired(false);
             modelBuilder.Property(s => s.CompanyName).HasMaxLength(300).IsRequired();
-            modelBuilder.Property(s => s.Krs).HasMaxLength(10).IsRequired();
-            modelBuilder.Property(s => s.Regon).HasMaxLength(9).IsRequired();
-            modelBuilder.Property(s => s.Email).HasMaxLength(100).IsRequired();
-            modelBuilder.Property(s => s.PhoneNumber).HasMaxLength(12).IsRequired();
+            modelBuilder.Property(s => s.Krs).HasMaxLength(10).IsRequired(false);
+            modelBuilder.Property(s => s.Regon).HasMaxLength(9).IsRequired(false);
+            modelBuilder.Property(s => s.Email).HasMaxLength(100).IsRequired(false);
+            modelBuilder.Property(s => s.PhoneNumber).HasMaxLength(12).IsRequired(false);
             modelBuilder.Ignore(s => s.Address);
-            modelBuilder.Property(s => s.StreetAddress).HasMaxLength(100).IsRequired();
-            modelBuilder.Property(s => s.City).HasMaxLength(100).IsRequired();
-            modelBuilder.Property(s => s.State).HasMaxLength(100).IsRequired();
-            modelBuilder.Property(s => s.PostalCode).HasMaxLength(6).IsRequired();
-            modelBuilder.Property(s => s.Fax).HasMaxLength(40).IsRequired();
-            modelBuilder.Property(s => s.Homepage).HasMaxLength(300).IsRequired();
+            modelBuilder.Property(s => s.StreetAddress).HasMaxLength(100).IsRequired(false);
+            modelBuilder.Property(s => s.City).HasMaxLength(100).IsRequired(false);
+            modelBuilder.Property(s => s.State).HasMaxLength(100).IsRequired(false);
+            modelBuilder.Property(s => s.PostalCode).HasMaxLength(6).IsRequired(false);
+            modelBuilder.Property(s => s.Fax).HasMaxLength(40).IsRequired(false);
+            modelBuilder.Property(s => s.Homepage).HasMaxLength(300).IsRequired(false);
             modelBuilder.Property(s => s.Archive).HasDefaultValue<bool>(false).IsRequired();
             modelBuilder.Property(s => s.Description).HasMaxLength(3000).IsRequired(false);
 

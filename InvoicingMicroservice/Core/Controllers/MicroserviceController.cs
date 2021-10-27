@@ -6,19 +6,17 @@ using InvoicingMicroservice.Core.Fluent;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace InvoicingMicroservice.Core.Controllers
+namespace MicroserviceController.Core.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class InventoryController : ControllerBase
+    public class MicroserviceController : ControllerBase
     {
-        private readonly ILogger<InventoryController> _logger;
-        private readonly MicroserviceContext _context;
+        private readonly ILogger<MicroserviceController> _logger;
 
-        public InventoryController(ILogger<InventoryController> logger, MicroserviceContext context)
+        public MicroserviceController(ILogger<MicroserviceController> logger)
         {
             _logger = logger;
-            _context = context;
         }
     }
 }
