@@ -39,10 +39,10 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public int CreateSuppContactPerson(SupplierContactPersonRelationDto<int> dto)
+        public int CreateSuppContactPerson(int suppId, SupplierContactPersonRelationDto<int> dto)
         {
             var model = _mapper.Map<SupplierContactPersonRelationDto<int>, SupplierContactPerson>(dto);
-            model.SupplierId = dto.Supplier;
+            model.SupplierId = suppId;
 
             _context.SuppliersContactsPersons.Add(model);
             _context.SaveChanges();

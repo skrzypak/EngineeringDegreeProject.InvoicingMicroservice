@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace InvoicingMicroservice.Core.Models.Dto.Document
 {
-    public class DocumentDto<TS, TDT, TDP> : DocumentRelationDto<TS, TDT, TDP>
+    public class DocumentDto<TDT, TDP> : DocumentRelationDto<TDT, TDP>
     {
         public int Id { get; set; }
     }

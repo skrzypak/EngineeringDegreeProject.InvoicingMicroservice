@@ -39,10 +39,10 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         }
 
         [HttpPost]
-        public ActionResult<int> CreateSupplier([FromBody] SupplierRelationDto<SupplierContactPersonCoreDto> dto)
+        public ActionResult CreateSupplier([FromBody] SupplierRelationDto<SupplierContactPersonCoreDto> dto)
         {
             var supplierId = _supplierService.CreateSupplier(dto);
-            return CreatedAtAction(nameof(GetSupplierById), new { id = supplierId }, null);
+            return CreatedAtAction(nameof(GetSupplierById), new { supplierId = supplierId }, null);
         }
 
         [HttpDelete("{supplierId}")]
@@ -67,10 +67,10 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         }
 
         [HttpPost("{supplierId}/contact")]
-        public ActionResult<int> CreateContactPerson([FromRoute] int supplierId, [FromBody] SupplierContactPersonRelationDto<int> dto)
+        public ActionResult CreateContactPerson([FromRoute] int supplierId, [FromBody] SupplierContactPersonRelationDto<int> dto)
         {
-            var contactPersonId = _supplierService.CreateSuppContactPerson(dto);
-            return CreatedAtAction(nameof(GetSuppContactPersonById), new { supplierId = supplierId, id = contactPersonId }, null);
+            var contactPersonId = _supplierService.CreateSuppContactPerson(supplierId, dto);
+            return CreatedAtAction(nameof(GetSuppContactPersonById), new { supplierId = supplierId, suppContactPersonId = contactPersonId }, null);
         }
 
         [HttpDelete("{id}/contact/{suppContactPersonId}")]

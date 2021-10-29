@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace InvoicingMicroservice.Core.Models.Dto.DocumentProduct
 {
-    public class DocumentProductDto<TD, TP> : DocumentProductRelationDto<TD, TP>
+    public class DocumentToProductRelationDto<TD, TP> : DocumentToProductCoreDto
     {
-        public int Id { get; set; }
+        public virtual TD Document { get; set; }
+        public virtual TP Product { get; set; }
     }
 }

@@ -16,6 +16,7 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
             modelBuilder.Property(d => d.Id).IsRequired();
 
             modelBuilder.Property(d => d.SupplierId).IsRequired();
+            modelBuilder.Property(d => d.DocumentTypeId).IsRequired();
 
             modelBuilder.Property(d => d.Signature).HasMaxLength(300).IsRequired();
             modelBuilder.Property(d => d.Number).IsRequired();
@@ -26,6 +27,7 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
             modelBuilder.ToTable("Documents");
             modelBuilder.Property(d => d.Id).HasColumnName("Id");
             modelBuilder.Property(d => d.SupplierId).HasColumnName("SupplierId");
+            modelBuilder.Property(d => d.DocumentTypeId).HasColumnName("DocumentTypeId");
             modelBuilder.Property(d => d.Signature).HasColumnName("Signature");
             modelBuilder.Property(d => d.Number).HasColumnName("Number");
             modelBuilder.Property(d => d.Description).HasColumnName("Description");

@@ -10,8 +10,8 @@ namespace InvoicingMicroservice.Core.Fluent
 {
     public class MicroserviceContext : DbContext
     {
-        public DbSet<Document> DeliveriesDocuments { get; set; }
-        public DbSet<DocumentToProduct> DeliveriesProducts { get; set; }
+        public DbSet<Document> Documents { get; set; }
+        public DbSet<DocumentToProduct> DocumentToProducts { get; set; }
         public DbSet<DocumentType> DocumentsTypes { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<SupplierContactPerson> SuppliersContactsPersons { get; set; }
