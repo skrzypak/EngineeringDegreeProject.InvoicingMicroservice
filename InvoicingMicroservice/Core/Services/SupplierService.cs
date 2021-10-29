@@ -29,12 +29,9 @@ namespace InvoicingMicroservice.Core.Services
             _mapper = mapper;
         }
 
-        public int CreateSupplier(SupplierCreateDto supplierCreateDto)
+        public int CreateSupplier(SupplierRelationDto<SupplierContactPersonCoreDto> dto)
         {
-            var model = _mapper.Map<SupplierCreateDto, Supplier>(supplierCreateDto);
-
-            model.SuppliersContactsPersons = 
-                _mapper.Map<ICollection<SupplierContactPersonBasicDto>, ICollection<SupplierContactPerson>>(supplierCreateDto.SupplierContactPersons);
+            var model = _mapper.Map<SupplierRelationDto<SupplierContactPersonCoreDto>, Supplier>(dto);
 
             _context.Suppliers.Add(model);
             _context.SaveChanges();
@@ -42,10 +39,10 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public int CreateSupplierContactPerson(int supplierId, SupplierContactPersonBasicDto supplierContactBasicDto)
+        public int CreateSuppContactPerson(SupplierContactPersonRelationDto<int> dto)
         {
-            var model = _mapper.Map<SupplierContactPersonBasicDto, SupplierContactPerson>(supplierContactBasicDto);
-            model.SupplierId = supplierId;
+            var model = _mapper.Map<SupplierContactPersonRelationDto<int>, SupplierContactPerson>(dto);
+            model.SupplierId = dto.Supplier;
 
             _context.SuppliersContactsPersons.Add(model);
             _context.SaveChanges();
@@ -62,16 +59,16 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public void DeleteSupplierContactPerson(int supplierId, int supplierContactPersonId)
+        public void DeleteSuppContactPerson(int supplierId, int suppContactPersonId)
         {
-            var model = new SupplierContactPerson() { Id = supplierContactPersonId, SupplierId = supplierId };
+            var model = new SupplierContactPerson() { Id = suppContactPersonId, SupplierId = supplierId };
 
             _context.SuppliersContactsPersons.Attach(model);
             _context.SuppliersContactsPersons.Remove(model);
             _context.SaveChanges();
         }
 
-        public object GetSupplierContactPersons(int supplierId)
+        public object GetSuppContactPersons(int supplierId)
         {
             var model = _context.SuppliersContactsPersons
                 .AsNoTracking()
@@ -95,12 +92,35 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object GetSupplierInformations(int supplierId)
+        public object GetSuppContactPersonById(int supplierId, int suppContactPersonId)
+        {
+            var model = _context.SuppliersContactsPersons
+                .AsNoTracking()
+                .Where(scp => scp.SupplierId == supplierId && scp.Id == suppContactPersonId)
+                .Select(scp => new
+                {
+                    scp.Id,
+                    scp.FirstName,
+                    scp.LastName,
+                    scp.Email,
+                    scp.PhoneNumber,
+                    scp.Description
+                });
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Contact person NOT FOUND");
+            }
+
+            return model;
+        }
+
+        public object GetSupplierById(int supplierId)
         {
             var model = _context.Suppliers
                 .AsNoTracking()
                 .Where(s => s.Id == supplierId)
-                .Include(s => s.SuppliersContactsPersons)
+                .Include(s => s.SupplierContactPersons)
                 .Select(s => new
                 {
                     s.Id,
@@ -120,7 +140,7 @@ namespace InvoicingMicroservice.Core.Services
                     s.Regon,
                     s.State,
                     s.StreetAddress,
-                    SuppliersContactsPersons = s.SuppliersContactsPersons.Select(scp => new
+                    SuppliersContactsPersons = s.SupplierContactPersons.Select(scp => new
                         {
                             scp.Id,
                             scp.FirstName,
@@ -132,7 +152,7 @@ namespace InvoicingMicroservice.Core.Services
                         .OrderBy(sx => sx.LastName).ThenBy(sx => sx.FirstName)
                         .Take(5)
                         .ToList(),
-                    DeliveryDocuments = s.DeliveryDocuments.Select(dd => new
+                    Documents = s.Documents.Select(dd => new
                         {
                             dd.Id,
                             dd.Signature,
@@ -154,11 +174,11 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object GetSuppliersList()
+        public object GetSuppliers()
         {
             var model = _context.Suppliers
                 .AsNoTracking()
-                .Include(s => s.SuppliersContactsPersons)
+                .Include(s => s.SupplierContactPersons)
                 .Select(s => new
                 {
                     s.Id,

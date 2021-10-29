@@ -48,6 +48,7 @@ namespace InvoicingMicroservice
             });
 
             services.AddScoped<ISupplierService, SupplierService>();
+            services.AddScoped<IDocumentService, DocumentService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -10,8 +10,8 @@ namespace InvoicingMicroservice.Core.Fluent
 {
     public class MicroserviceContext : DbContext
     {
-        public DbSet<DeliveryDocument> DeliveriesDocuments { get; set; }
-        public DbSet<DeliveryProduct> DeliveriesProducts { get; set; }
+        public DbSet<Document> DeliveriesDocuments { get; set; }
+        public DbSet<DocumentToProduct> DeliveriesProducts { get; set; }
         public DbSet<DocumentType> DocumentsTypes { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<SupplierContactPerson> SuppliersContactsPersons { get; set; }
@@ -30,8 +30,8 @@ namespace InvoicingMicroservice.Core.Fluent
             //    entity.AddProperty("DomainUserId", typeof(ulong));
             //}
 
-            modelBuilder.ApplyConfiguration(new DeliveryDocumentConfiguration());
-            modelBuilder.ApplyConfiguration(new DeliveryProductConfiguration());
+            modelBuilder.ApplyConfiguration(new DocumentConfiguration());
+            modelBuilder.ApplyConfiguration(new DocumentToProductConfiguration());
             modelBuilder.ApplyConfiguration(new DocumentTypeConfiguration());
             modelBuilder.ApplyConfiguration(new ProductConfiguration());
             modelBuilder.ApplyConfiguration(new SupplierConfiguration());

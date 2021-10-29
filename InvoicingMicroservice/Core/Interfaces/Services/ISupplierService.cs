@@ -9,13 +9,14 @@ namespace InvoicingMicroservice.Core.Interfaces.Services
 {
     public interface ISupplierService
     {
-        public object GetSuppliersList();
-        public object GetSupplierInformations(int supplierId);
-        public int CreateSupplier(SupplierCreateDto supplierCreateDto);
+        public object GetSuppliers();
+        public object GetSupplierById(int supplierId);
+        public int CreateSupplier(SupplierRelationDto<SupplierContactPersonCoreDto> dto);
         public void DeleteSupplier(int supplierId);
-        public object GetSupplierContactPersons(int supplierId);
-        public int CreateSupplierContactPerson(int supplierId, SupplierContactPersonBasicDto supplierContactBasicDto);
-        public void DeleteSupplierContactPerson(int supplierId, int supplierContactPersonId);
+        public object GetSuppContactPersons(int supplierId);
+        public object GetSuppContactPersonById(int supplierId, int suppContactPersonId);
+        public int CreateSuppContactPerson(SupplierContactPersonRelationDto<int> dto);
+        public void DeleteSuppContactPerson(int supplierId, int suppContactPersonId);
 
     }
 }

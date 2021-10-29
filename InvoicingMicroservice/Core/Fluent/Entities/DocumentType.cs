@@ -11,7 +11,7 @@ namespace InvoicingMicroservice.Core.Fluent.Entities
         public string Code { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public virtual ICollection<DeliveryDocument> DeliveriesDocuments { get; set; }
+        public virtual ICollection<Document> Documents { get; set; }
 
     }
 }

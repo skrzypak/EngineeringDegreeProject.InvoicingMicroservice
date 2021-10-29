@@ -24,7 +24,7 @@ namespace InvoicingMicroservice.Core.Fluent.Entities
         public string Homepage { get; set; }
         public bool Archive { get; set; }
         public string Description { get; set; }
-        public virtual ICollection<DeliveryDocument> DeliveryDocuments { get; set; }
-        public virtual ICollection<SupplierContactPerson> SuppliersContactsPersons { get; set; }
+        public virtual ICollection<Document> Documents { get; set; }
+        public virtual ICollection<SupplierContactPerson> SupplierContactPersons { get; set; }
     }
 }

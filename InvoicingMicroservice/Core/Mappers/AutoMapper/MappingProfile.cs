@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using AutoMapper;
 using InvoicingMicroservice.Core.Fluent.Entities;
 using InvoicingMicroservice.Core.Models.Dto.Supplier;
 using InvoicingMicroservice.Core.Models.Dto.SupplierContactPerson;
@@ -9,15 +10,9 @@ namespace InvoicingMicroservice.Core.Mappers.AutoMapper
     {
         public MappingProfile()
         {
-            CreateMap<SupplierBasicDto, Supplier>();
-            CreateMap<Supplier, SupplierBasicDto>();
-            CreateMap<SupplierDto, Supplier>();
-            CreateMap<Supplier, SupplierDto>();
+            CreateMap(typeof(SupplierContactPersonCoreDto), typeof(SupplierContactPerson));
 
-            CreateMap<SupplierContactPersonBasicDto, SupplierContactPerson>();
-            CreateMap<SupplierContactPerson, SupplierContactPersonBasicDto>();
-            CreateMap<SupplierContactPersonDto, SupplierContactPerson>();
-            CreateMap<SupplierContactPerson, SupplierContactPersonDto>();
+            CreateMap(typeof(SupplierRelationDto<SupplierContactPersonCoreDto>), typeof(Supplier));
         }
     }
 }

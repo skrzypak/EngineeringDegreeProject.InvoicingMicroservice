@@ -15,4 +15,10 @@ namespace InvoicingMicroservice.Core.Fluent.Enums
         l,
         piece
     }
+
+    public enum DocumentState
+    {
+        unsettled,
+        settled,
+    }
 }

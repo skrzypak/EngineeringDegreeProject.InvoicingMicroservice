@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace InvoicingMicroservice.Core.Models.Dto.SupplierContactPerson
 {
-    public class SupplierContactPersonDto<TS> : SupplierContactPersonRelationDto<TS>
+    public class SupplierContactPersonRelationDto<TS> : SupplierContactPersonCoreDto
     {
-        public int Id { get; set; }
+        public TS Supplier { get; set; }
     }
 }

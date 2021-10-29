@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using InvoicingMicroservice.Core.Fluent.Enums;
 
 namespace InvoicingMicroservice.Core.Fluent.Entities
 {
-    public class DeliveryDocument : IEntity
+    public class Document : IEntity
     {
         public int Id { get; set; }
         public int SupplierId { get; set; }
@@ -13,7 +14,9 @@ namespace InvoicingMicroservice.Core.Fluent.Entities
         public ushort Number { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
+        public DocumentState State { get; set; }
         public virtual Supplier Supplier { get; set; }
-        public virtual ICollection<DeliveryProduct> DeliveriesProducts { get; set; }
+        public virtual DocumentType Type { get; set; }
+        public virtual ICollection<DocumentToProduct> DocumentsToProducts { get; set; }
     }
 }
