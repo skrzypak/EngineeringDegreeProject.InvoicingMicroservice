@@ -27,56 +27,56 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         [HttpGet("all")]
         public ActionResult<object> GetSuppliers()
         {
-            var supplierInformationsList = _supplierService.GetSuppliers();
+            var supplierInformationsList = _supplierService.Get();
             return Ok(supplierInformationsList);
         }
 
         [HttpGet("{supplierId}")]
         public ActionResult<object> GetSupplierById([FromRoute] int supplierId)
         {
-            var supplierInformations = _supplierService.GetSupplierById(supplierId);
+            var supplierInformations = _supplierService.GetById(supplierId);
             return Ok(supplierInformations);
         }
 
         [HttpPost]
-        public ActionResult CreateSupplier([FromBody] SupplierRelationDto<SupplierContactPersonCoreDto> dto)
+        public ActionResult CreateSupplier([FromBody] SupplierCoreDto<SupplierContactPersonCoreDto> dto)
         {
-            var supplierId = _supplierService.CreateSupplier(dto);
+            var supplierId = _supplierService.Create(dto);
             return CreatedAtAction(nameof(GetSupplierById), new { supplierId = supplierId }, null);
         }
 
         [HttpDelete("{supplierId}")]
         public ActionResult DeleteSupplier([FromRoute] int supplierId)
         {
-            _supplierService.DeleteSupplier(supplierId);
+            _supplierService.Delete(supplierId);
             return NoContent();
         }
 
         [HttpGet("{supplierId}/contact/all")]
         public ActionResult<object> GetSuppContactPersons([FromRoute] int supplierId)
         {
-            var supplierInformations = _supplierService.GetSuppContactPersons(supplierId);
+            var supplierInformations = _supplierService.GetContactPersons(supplierId);
             return Ok(supplierInformations);
         }
 
         [HttpGet("{supplierId}/contact/{suppContactPersonId}")]
         public ActionResult<object> GetSuppContactPersonById([FromRoute] int supplierId, [FromRoute] int suppContactPersonId)
         {
-            var supplierInformations = _supplierService.GetSuppContactPersonById(supplierId, suppContactPersonId);
+            var supplierInformations = _supplierService.GetContactPersonById(supplierId, suppContactPersonId);
             return Ok(supplierInformations);
         }
 
         [HttpPost("{supplierId}/contact")]
-        public ActionResult CreateContactPerson([FromRoute] int supplierId, [FromBody] SupplierContactPersonRelationDto<int> dto)
+        public ActionResult CreateContactPerson([FromRoute] int supplierId, [FromBody] SupplierContactPersonCoreDto dto)
         {
-            var contactPersonId = _supplierService.CreateSuppContactPerson(supplierId, dto);
+            var contactPersonId = _supplierService.CreateContactPerson(supplierId, dto);
             return CreatedAtAction(nameof(GetSuppContactPersonById), new { supplierId = supplierId, suppContactPersonId = contactPersonId }, null);
         }
 
         [HttpDelete("{id}/contact/{suppContactPersonId}")]
         public ActionResult DeleteSuppContactPerson([FromRoute] int id, [FromRoute] int suppContactPersonId)
         {
-            _supplierService.DeleteSuppContactPerson(id, suppContactPersonId);
+            _supplierService.DeleteContactPerson(id, suppContactPersonId);
             return NoContent();
         }
     }

@@ -7,7 +7,7 @@ using InvoicingMicroservice.Core.Interfaces.ViewModel;
 
 namespace InvoicingMicroservice.Core.Models.Dto.DocumentProduct
 {
-    public class DocumentToProductCoreDto : IDto
+    public class DocumentToProductCoreDto<TP> : IDto
     {
         public ushort Quantity { get; set; }
         public decimal UnitNetPrice { get; set; }
@@ -16,5 +16,6 @@ namespace InvoicingMicroservice.Core.Models.Dto.DocumentProduct
         public decimal VatValue { get; set; }
         public decimal GrossValue { get; set; }
         public bool Transfered { get; set; } = false;
+        public virtual TP Product { get; set; }
     }
 }

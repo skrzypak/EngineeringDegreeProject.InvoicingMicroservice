@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using InvoicingMicroservice.Core.Exceptions;
 using InvoicingMicroservice.Core.Fluent;
@@ -12,7 +10,6 @@ using InvoicingMicroservice.Core.Models.Dto.Document;
 using InvoicingMicroservice.Core.Models.Dto.DocumentProduct;
 using InvoicingMicroservice.Core.Models.Dto.DocumentType;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 
 namespace InvoicingMicroservice.Core.Services
@@ -33,7 +30,7 @@ namespace InvoicingMicroservice.Core.Services
             _mapper = mapper;
         }
 
-        public int AddProductToDocument(int docId, DocumentToProductPushDto dto)
+        public int AddProduct(int docId, DocumentToProductPushDto dto)
         {
             var model = _mapper.Map<DocumentToProductPushDto, DocumentToProduct>(dto);
 
@@ -60,9 +57,9 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public int CreateDocument(DocumentRelationDto<int, DocumentToProductPushDto> dto)
+        public int Create(DocumentCoreDto<int, DocumentToProductPushDto, int> dto)
         {
-            var model = _mapper.Map<DocumentRelationDto<int, DocumentToProductPushDto>, Document>(dto);
+            var model = _mapper.Map< DocumentCoreDto<int, DocumentToProductPushDto, int>, Document>(dto);
 
             _context.Documents.Add(model);
             _context.SaveChanges();
@@ -80,7 +77,7 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public void DeleteDocument(int docId)
+        public void Delete(int docId)
         {
             var model = new Document() { Id = docId };
 
@@ -98,7 +95,7 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public void DeleteProductFromDocument(int docId, int docProdId)
+        public void DeleteProduct(int docId, int docProdId)
         {
             var model = new DocumentToProduct() { Id = docProdId, DocumentId = docId };
 
@@ -107,7 +104,7 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public object GetDocumentById(int docId)
+        public object GetById(int docId)
         {
             var dto = _context.Documents
                 .AsNoTracking()
@@ -155,7 +152,7 @@ namespace InvoicingMicroservice.Core.Services
             return dto;
         }
 
-        public object GetDocuments(int?[] supplierId, int?[] docTypeIds, DocumentState[] docStates, DateTime startDate, DateTime endDate)
+        public object Get(int?[] supplierId, int?[] docTypeIds, DocumentState[] docStates, DateTime startDate, DateTime endDate)
         {
             var iquery = _context.Documents
                .AsNoTracking()

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using InvoicingMicroservice.Core.Fluent.Enums;
 using InvoicingMicroservice.Core.Interfaces.Services;
 using InvoicingMicroservice.Core.Models.Dto.Document;
@@ -26,26 +23,26 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         }
 
         [HttpGet]
-        public ActionResult<object> GetDocuments(
+        public ActionResult<object> Get(
             [FromQuery] int?[] suppliersId,
             [FromQuery] int?[] docTypeIds,
             [FromQuery] DocumentState[] docStates,
             [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate)
         {
-            var response = _documentService.GetDocuments(suppliersId, docTypeIds, docStates, startDate, endDate);
+            var response = _documentService.Get(suppliersId, docTypeIds, docStates, startDate, endDate);
             return Ok(response);
         }
 
         [HttpGet("{docId}")]
-        public ActionResult<object> GetDocumentById([FromRoute] int docId)
+        public ActionResult<object> GetById([FromRoute] int docId)
         {
-            var response = _documentService.GetDocumentById(docId);
+            var response = _documentService.GetById(docId);
             return Ok(response);
         }
 
         [HttpGet("{docId}/product/{docProdId}")]
-        public ActionResult GetProductFromDocumentById([FromRoute] int docId, [FromRoute] int docProdId)
+        public ActionResult GetProductById([FromRoute] int docId, [FromRoute] int docProdId)
         {
             return NoContent();
         }
@@ -65,17 +62,17 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         }
 
         [HttpPost]
-        public ActionResult CreateDocument([FromBody] DocumentRelationDto<int, DocumentToProductPushDto> dto)
+        public ActionResult Create([FromBody] DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
-            var docId = _documentService.CreateDocument(dto);
-            return CreatedAtAction(nameof(GetDocumentById), new { docId = docId }, null);
+            var docId = _documentService.Create(dto);
+            return CreatedAtAction(nameof(GetById), new { docId = docId }, null);
         }
 
         [HttpPost("{docId}/product")]
-        public ActionResult AddProductToDocument([FromRoute] int docId, [FromBody] DocumentToProductPushDto dto)
+        public ActionResult AddProduct([FromRoute] int docId, [FromBody] DocumentToProductCoreDto<int> dto)
         {
-            var docProdId = _documentService.AddProductToDocument(docId, dto);
-            return CreatedAtAction(nameof(GetProductFromDocumentById), new { docId = docId, docProdId = docProdId }, null);
+            var docProdId = _documentService.AddProduct(docId, dto);
+            return CreatedAtAction(nameof(GetProductById), new { docId = docId, docProdId = docProdId }, null);
         }
 
         [HttpPost("type")]
@@ -93,16 +90,16 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         }
 
         [HttpDelete("{docId}")]
-        public ActionResult DeleteDocument([FromRoute] int docId)
+        public ActionResult Delete([FromRoute] int docId)
         {
-            _documentService.DeleteDocument(docId);
+            _documentService.Delete(docId);
             return NoContent();
         }
 
         [HttpDelete("{docId}/product/{docProdId}")]
-        public ActionResult DeleteProductFromDocument([FromRoute] int docId, [FromRoute] int docProdId)
+        public ActionResult DeleteProduct([FromRoute] int docId, [FromRoute] int docProdId)
         {
-            _documentService.DeleteProductFromDocument(docId, docProdId);
+            _documentService.DeleteProduct(docId, docProdId);
             return NoContent();
         }
 

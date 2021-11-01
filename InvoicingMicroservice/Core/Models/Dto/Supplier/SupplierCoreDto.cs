@@ -7,7 +7,7 @@ using InvoicingMicroservice.Core.Interfaces.ViewModel;
 
 namespace InvoicingMicroservice.Core.Models.Dto.Supplier
 {
-    public class SupplierCoreDto : IDto
+    public class SupplierCoreDto<TSCP> : IDto
     {
         [Required, MinLength(10), MaxLength(10)]
         public string Nip { get; set; }
@@ -36,5 +36,6 @@ namespace InvoicingMicroservice.Core.Models.Dto.Supplier
         public bool Archive { get; set; } = false;
         [MaxLength(3000)]
         public string Description { get; set; }
+        public ICollection<TSCP> SupplierContactPersons { get; set; }
     }
 }

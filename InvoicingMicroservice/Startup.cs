@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using InvoicingMicroservice.Core.Fluent;
 using InvoicingMicroservice.Core.Interfaces.Services;
 using InvoicingMicroservice.Core.Middlewares;
@@ -33,7 +30,7 @@ namespace InvoicingMicroservice
             services.AddDbContext<MicroserviceContext>(options =>
             {
                 options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"), builder => {
-                    //builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
                 });
             });
 
@@ -61,7 +58,7 @@ namespace InvoicingMicroservice
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "InvoicingMicroservice v1"));
             }
 
-            //app.UseMiddleware<ErrorHandlingMiddleware>();
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             app.UseRouting();
 

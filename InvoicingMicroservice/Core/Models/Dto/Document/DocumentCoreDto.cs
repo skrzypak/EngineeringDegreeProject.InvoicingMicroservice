@@ -8,7 +8,7 @@ using InvoicingMicroservice.Core.Interfaces.ViewModel;
 
 namespace InvoicingMicroservice.Core.Models.Dto.Document
 {
-    public class DocumentCoreDto<TDT> : IDto
+    public class DocumentCoreDto<TDT, TDP, TDS> : IDto
     {
         public string Signature { get; set; }
         public ushort Number { get; set; }
@@ -16,5 +16,7 @@ namespace InvoicingMicroservice.Core.Models.Dto.Document
         public DateTime Date { get; set; }
         public DocumentState State { get; set; }
         public string Description { get; set; }
+        public TDS Supplier { get; set; }
+        public ICollection<TDP> Products { get; set; }
     }
 }

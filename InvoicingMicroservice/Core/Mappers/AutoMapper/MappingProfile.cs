@@ -14,20 +14,20 @@ namespace InvoicingMicroservice.Core.Mappers.AutoMapper
         public MappingProfile()
         {
             CreateMap(typeof(SupplierContactPersonCoreDto), typeof(SupplierContactPerson));
-            CreateMap(typeof(SupplierRelationDto<SupplierContactPersonCoreDto>), typeof(Supplier));
+            CreateMap(typeof(SupplierCoreDto<SupplierContactPersonCoreDto>), typeof(Supplier));
 
             CreateMap<DocumentTypeCoreDto, DocumentType>();
 
-            CreateMap<DocumentToProductPushDto, DocumentToProduct>()
-                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
+            CreateMap<DocumentToProductCoreDto<int>, DocumentToProduct>()
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Product))
                 .ForMember(dest => dest.Product, opt => opt.Ignore())
                 .ForMember(dest => dest.DocumentId, opt => opt.Ignore())
                 .ForMember(dest => dest.Document, opt => opt.Ignore());
 
-            CreateMap<DocumentRelationDto<int, DocumentToProductPushDto>, Document>()
+            CreateMap<DocumentCoreDto<int, DocumentToProductCoreDto<int>, int>, Document>()
                 .ForMember(dest => dest.DocumentTypeId, opt => opt.MapFrom(src => src.Type))
                 .ForMember(dest => dest.DocumentType, opt => opt.Ignore())
-                .ForMember(dest => dest.SupplierId, opt => opt.MapFrom(src => src.SupplierId))
+                .ForMember(dest => dest.SupplierId, opt => opt.MapFrom(src => src.Supplier))
                 .ForMember(dest => dest.Supplier, opt => opt.Ignore())
                 .ForMember(dest => dest.DocumentsToProducts, opt => opt.MapFrom(src => src.Products));
         }

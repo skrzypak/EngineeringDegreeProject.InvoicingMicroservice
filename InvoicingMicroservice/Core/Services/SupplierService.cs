@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using AutoMapper;
 using InvoicingMicroservice.Core.Exceptions;
 using InvoicingMicroservice.Core.Fluent;
@@ -29,9 +26,9 @@ namespace InvoicingMicroservice.Core.Services
             _mapper = mapper;
         }
 
-        public int CreateSupplier(SupplierRelationDto<SupplierContactPersonCoreDto> dto)
+        public int Create(SupplierCoreDto<SupplierContactPersonCoreDto> dto)
         {
-            var model = _mapper.Map<SupplierRelationDto<SupplierContactPersonCoreDto>, Supplier>(dto);
+            var model = _mapper.Map<SupplierCoreDto<SupplierContactPersonCoreDto>, Supplier>(dto);
 
             _context.Suppliers.Add(model);
             _context.SaveChanges();
@@ -39,9 +36,9 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public int CreateSuppContactPerson(int suppId, SupplierContactPersonRelationDto<int> dto)
+        public int CreateContactPerson(int suppId, SupplierContactPersonCoreDto dto)
         {
-            var model = _mapper.Map<SupplierContactPersonRelationDto<int>, SupplierContactPerson>(dto);
+            var model = _mapper.Map<SupplierContactPersonCoreDto, SupplierContactPerson>(dto);
             model.SupplierId = suppId;
 
             _context.SuppliersContactsPersons.Add(model);
@@ -50,7 +47,7 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public void DeleteSupplier(int supplierId)
+        public void Delete(int supplierId)
         {
             var model = new Supplier() { Id = supplierId };
 
@@ -59,7 +56,7 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public void DeleteSuppContactPerson(int supplierId, int suppContactPersonId)
+        public void DeleteContactPerson(int supplierId, int suppContactPersonId)
         {
             var model = new SupplierContactPerson() { Id = suppContactPersonId, SupplierId = supplierId };
 
@@ -68,7 +65,7 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public object GetSuppContactPersons(int supplierId)
+        public object GetContactPersons(int supplierId)
         {
             var model = _context.SuppliersContactsPersons
                 .AsNoTracking()
@@ -92,7 +89,7 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object GetSuppContactPersonById(int supplierId, int suppContactPersonId)
+        public object GetContactPersonById(int supplierId, int suppContactPersonId)
         {
             var model = _context.SuppliersContactsPersons
                 .AsNoTracking()
@@ -115,7 +112,7 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object GetSupplierById(int supplierId)
+        public object GetById(int supplierId)
         {
             var model = _context.Suppliers
                 .AsNoTracking()
@@ -174,7 +171,7 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object GetSuppliers()
+        public object Get()
         {
             var model = _context.Suppliers
                 .AsNoTracking()
