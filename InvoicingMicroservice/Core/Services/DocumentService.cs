@@ -55,7 +55,6 @@ namespace InvoicingMicroservice.Core.Services
             {
                 InvoicingSupplierId = model.Document.SupplierId,
                 InvoicingDocumentId = model.DocumentId,
-                Items = new List<ItemsPayloadValue>()
             };
 
             message.Items.Add(new ItemsPayloadValue()
@@ -63,9 +62,10 @@ namespace InvoicingMicroservice.Core.Services
                 InvoicingDocumentToProductId = model.Id,
                 ProductId = model.ProductId,
                 NumOfAvailable = model.Quantity,
-                ExpirationDate = DateTime.MaxValue
+                ExpirationDate = DateTime.MaxValue,
+                Crud = CRUD.Create
             });
-        
+
             var payload = new Payload<InventoryPayloadValue>(message, CRUD.Create);
             await endPoint.Send(payload);
 
@@ -94,28 +94,25 @@ namespace InvoicingMicroservice.Core.Services
             _context.Documents.Add(model);
             _context.SaveChanges();
 
-            Uri uri = new Uri("rabbitmq://localhost/inventoryQueue");
-            var endPoint = await _bus.GetSendEndpoint(uri);
-
             var message = new InventoryPayloadValue() { 
                 InvoicingSupplierId = model.SupplierId,
                 InvoicingDocumentId = model.Id,
-                Items = new List<ItemsPayloadValue>()
+                //Items = new Dictionary<ItemsPayloadValue, CRUD>()
             };
 
-            foreach (var dtp in model.DocumentsToProducts) {
+            foreach (var dtp in model.DocumentsToProducts)
+            {
                 message.Items.Add(new ItemsPayloadValue()
                 {
                     InvoicingDocumentToProductId = dtp.Id,
                     ProductId = dtp.ProductId,
                     NumOfAvailable = dtp.Quantity,
-                    ExpirationDate = DateTime.MaxValue
+                    ExpirationDate = DateTime.MaxValue,
+                    Crud = CRUD.Create
                 });
             }
 
-            var payload = new Payload<InventoryPayloadValue>(message, CRUD.Create);
-            await endPoint.Send(payload);
-
+            await SyncAsync(message, CRUD.Create);
 
             return model.Id;
         }
@@ -293,6 +290,21 @@ namespace InvoicingMicroservice.Core.Services
             }
 
             return dto;
+        }
+
+        private async Task SyncAsync(InventoryPayloadValue message, CRUD crud)
+        {
+            var payload = new Payload<InventoryPayloadValue>(message, crud);
+
+            Uri[] uri = {
+                new Uri("rabbitmq://localhost/msinve.inventory.queue"),
+            };
+
+            foreach (var u in uri)
+            {
+                var endPoint = await _bus.GetSendEndpoint(u);
+                await endPoint.Send(payload);
+            }
         }
     }
 }

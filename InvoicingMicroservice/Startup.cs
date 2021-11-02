@@ -48,7 +48,7 @@ namespace InvoicingMicroservice
                         h.Password("guest");
                     });
 
-                    config.ReceiveEndpoint("productQueue", ep =>
+                    config.ReceiveEndpoint("msinvo.product.queue", ep =>
                     {
                         ep.PrefetchCount = 16;
                         ep.UseMessageRetry(r => r.Interval(2, 100));

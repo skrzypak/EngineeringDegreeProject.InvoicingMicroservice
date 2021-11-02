@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using InvoicingMicroservice.Core.Fluent.Enums;
 using InvoicingMicroservice.Core.Interfaces.Services;
 using InvoicingMicroservice.Core.Models.Dto.Document;
@@ -62,16 +63,16 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         }
 
         [HttpPost]
-        public ActionResult Create([FromBody] DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
+        public async Task<ActionResult> Create([FromBody] DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
-            var docId = _documentService.Create(dto);
+            var docId = await _documentService.Create(dto);
             return CreatedAtAction(nameof(GetById), new { docId = docId }, null);
         }
 
         [HttpPost("{docId}/product")]
-        public ActionResult AddProduct([FromRoute] int docId, [FromBody] DocumentToProductCoreDto<int> dto)
+        public async Task<ActionResult> AddProduct([FromRoute] int docId, [FromBody] DocumentToProductCoreDto<int> dto)
         {
-            var docProdId = _documentService.AddProduct(docId, dto);
+            var docProdId = await _documentService.AddProduct(docId, dto);
             return CreatedAtAction(nameof(GetProductById), new { docId = docId, docProdId = docProdId }, null);
         }
 

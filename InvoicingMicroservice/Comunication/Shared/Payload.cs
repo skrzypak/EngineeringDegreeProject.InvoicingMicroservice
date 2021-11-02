@@ -25,6 +25,7 @@ namespace Comunication.Shared
         Create,
         Read,
         Update,
-        Delete
+        Delete,
+        Exists
     }
 }
