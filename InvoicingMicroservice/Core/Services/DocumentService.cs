@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
+using Comunication.Shared;
+using Comunication.Shared.PayloadValue;
 using InvoicingMicroservice.Core.Exceptions;
 using InvoicingMicroservice.Core.Fluent;
 using InvoicingMicroservice.Core.Fluent.Entities;
@@ -9,8 +13,10 @@ using InvoicingMicroservice.Core.Interfaces.Services;
 using InvoicingMicroservice.Core.Models.Dto.Document;
 using InvoicingMicroservice.Core.Models.Dto.DocumentProduct;
 using InvoicingMicroservice.Core.Models.Dto.DocumentType;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using static Comunication.Shared.PayloadValue.InventoryPayloadValue;
 
 namespace InvoicingMicroservice.Core.Services
 {
@@ -19,18 +25,21 @@ namespace InvoicingMicroservice.Core.Services
         private readonly ILogger<DocumentService> _logger;
         private readonly MicroserviceContext _context;
         private readonly IMapper _mapper;
+        private readonly IBus _bus;
 
         public DocumentService(
             ILogger<DocumentService> logger,
             MicroserviceContext context,
-            IMapper mapper)
+            IMapper mapper,
+            IBus bus)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
+            _bus = bus;
         }
 
-        public int AddProduct(int docId, DocumentToProductCoreDto<int> dto)
+        public async Task<int> AddProduct(int docId, DocumentToProductCoreDto<int> dto)
         {
             var model = _mapper.Map<DocumentToProductCoreDto<int>, DocumentToProduct>(dto);
 
@@ -38,6 +47,27 @@ namespace InvoicingMicroservice.Core.Services
 
             _context.DocumentToProducts.Add(model);
             _context.SaveChanges();
+
+            Uri uri = new Uri("rabbitmq://localhost/inventoryQueue");
+            var endPoint = await _bus.GetSendEndpoint(uri);
+
+            var message = new InventoryPayloadValue()
+            {
+                InvoicingSupplierId = model.Document.SupplierId,
+                InvoicingDocumentId = model.DocumentId,
+                Items = new List<ItemsPayloadValue>()
+            };
+
+            message.Items.Add(new ItemsPayloadValue()
+            {
+                InvoicingDocumentToProductId = model.Id,
+                ProductId = model.ProductId,
+                NumOfAvailable = model.Quantity,
+                ExpirationDate = DateTime.MaxValue
+            });
+        
+            var payload = new Payload<InventoryPayloadValue>(message, CRUD.Create);
+            await endPoint.Send(payload);
 
             return model.Id;
         }
@@ -57,12 +87,35 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public int Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
+        public async Task<int> Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
             var model = _mapper.Map<DocumentCoreDto<int, DocumentToProductCoreDto<int>, int>, Document>(dto);
 
             _context.Documents.Add(model);
             _context.SaveChanges();
+
+            Uri uri = new Uri("rabbitmq://localhost/inventoryQueue");
+            var endPoint = await _bus.GetSendEndpoint(uri);
+
+            var message = new InventoryPayloadValue() { 
+                InvoicingSupplierId = model.SupplierId,
+                InvoicingDocumentId = model.Id,
+                Items = new List<ItemsPayloadValue>()
+            };
+
+            foreach (var dtp in model.DocumentsToProducts) {
+                message.Items.Add(new ItemsPayloadValue()
+                {
+                    InvoicingDocumentToProductId = dtp.Id,
+                    ProductId = dtp.ProductId,
+                    NumOfAvailable = dtp.Quantity,
+                    ExpirationDate = DateTime.MaxValue
+                });
+            }
+
+            var payload = new Payload<InventoryPayloadValue>(message, CRUD.Create);
+            await endPoint.Send(payload);
+
 
             return model.Id;
         }

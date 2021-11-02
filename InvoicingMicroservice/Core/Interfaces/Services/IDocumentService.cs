@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using InvoicingMicroservice.Core.Fluent.Enums;
 using InvoicingMicroservice.Core.Models.Dto.Document;
 using InvoicingMicroservice.Core.Models.Dto.DocumentProduct;
@@ -10,8 +11,8 @@ namespace InvoicingMicroservice.Core.Interfaces.Services
     {
         public object Get(int?[] supplierIds, int?[] docTypeIds, DocumentState[] docStates, DateTime startDate, DateTime endDate);
         public object GetById(int docId);
-        public int Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto);
-        public int AddProduct(int docId, DocumentToProductCoreDto<int> dto);
+        public Task<int> Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto);
+        public Task<int> AddProduct(int docId, DocumentToProductCoreDto<int> dto);
         public void ChangeDocumentState(int docId, DocumentState state);
         public void Delete(int docId);
         public void DeleteProduct(int docId, int docProdId);
