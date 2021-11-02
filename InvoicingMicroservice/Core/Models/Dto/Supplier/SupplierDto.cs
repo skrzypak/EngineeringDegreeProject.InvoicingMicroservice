@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace InvoicingMicroservice.Core.Models.Dto.Supplier
 {
-    public class SupplierDto<TSCP> : SupplierRelationDto<TSCP>
+    public class SupplierDto<TSCP> : SupplierCoreDto<TSCP>
     {
         public int Id { get; set; }
     }

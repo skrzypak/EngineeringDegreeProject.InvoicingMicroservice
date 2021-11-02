@@ -1,8 +1,11 @@
 using System;
+using GreenPipes;
 using InvoicingMicroservice.Core.Fluent;
 using InvoicingMicroservice.Core.Interfaces.Services;
 using InvoicingMicroservice.Core.Middlewares;
 using InvoicingMicroservice.Core.Services;
+using InvoicingMicroservice.Comunication.Consumers;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +36,27 @@ namespace InvoicingMicroservice
                     builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
                 });
             });
+
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<ProductConsumer>();
+                x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(config =>
+                {
+                    config.Host(new Uri("rabbitmq://localhost"), h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
+                    config.ReceiveEndpoint("productQueue", ep =>
+                    {
+                        ep.PrefetchCount = 16;
+                        ep.UseMessageRetry(r => r.Interval(2, 100));
+                        ep.ConfigureConsumer<ProductConsumer>(provider);
+                    });
+                }));
+            });
+            services.AddMassTransitHostedService();
 
             services.AddControllers();
             services.AddScoped<ErrorHandlingMiddleware>();

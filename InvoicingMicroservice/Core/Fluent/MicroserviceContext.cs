@@ -15,6 +15,7 @@ namespace InvoicingMicroservice.Core.Fluent
         public DbSet<DocumentType> DocumentsTypes { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<SupplierContactPerson> SuppliersContactsPersons { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         public MicroserviceContext(DbContextOptions options) : base(options)
         {

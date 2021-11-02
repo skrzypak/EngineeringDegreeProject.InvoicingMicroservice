@@ -30,9 +30,9 @@ namespace InvoicingMicroservice.Core.Services
             _mapper = mapper;
         }
 
-        public int AddProduct(int docId, DocumentToProductPushDto dto)
+        public int AddProduct(int docId, DocumentToProductCoreDto<int> dto)
         {
-            var model = _mapper.Map<DocumentToProductPushDto, DocumentToProduct>(dto);
+            var model = _mapper.Map<DocumentToProductCoreDto<int>, DocumentToProduct>(dto);
 
             model.DocumentId = docId;
 
@@ -57,9 +57,9 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public int Create(DocumentCoreDto<int, DocumentToProductPushDto, int> dto)
+        public int Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
-            var model = _mapper.Map< DocumentCoreDto<int, DocumentToProductPushDto, int>, Document>(dto);
+            var model = _mapper.Map<DocumentCoreDto<int, DocumentToProductCoreDto<int>, int>, Document>(dto);
 
             _context.Documents.Add(model);
             _context.SaveChanges();
