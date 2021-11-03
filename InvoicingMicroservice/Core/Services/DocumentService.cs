@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Comunication.Shared;
@@ -16,7 +18,6 @@ using InvoicingMicroservice.Core.Models.Dto.DocumentType;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using static Comunication.Shared.PayloadValue.InventoryPayloadValue;
 
 namespace InvoicingMicroservice.Core.Services
 {
@@ -39,39 +40,6 @@ namespace InvoicingMicroservice.Core.Services
             _bus = bus;
         }
 
-        public async Task<int> AddProduct(int docId, DocumentToProductCoreDto<int> dto)
-        {
-            var model = _mapper.Map<DocumentToProductCoreDto<int>, DocumentToProduct>(dto);
-
-            model.DocumentId = docId;
-
-            _context.DocumentToProducts.Add(model);
-            _context.SaveChanges();
-
-            Uri uri = new Uri("rabbitmq://localhost/inventoryQueue");
-            var endPoint = await _bus.GetSendEndpoint(uri);
-
-            var message = new InventoryPayloadValue()
-            {
-                InvoicingSupplierId = model.Document.SupplierId,
-                InvoicingDocumentId = model.DocumentId,
-            };
-
-            message.Items.Add(new ItemsPayloadValue()
-            {
-                InvoicingDocumentToProductId = model.Id,
-                ProductId = model.ProductId,
-                NumOfAvailable = model.Quantity,
-                ExpirationDate = DateTime.MaxValue,
-                Crud = CRUD.Create
-            });
-
-            var payload = new Payload<InventoryPayloadValue>(message, CRUD.Create);
-            await endPoint.Send(payload);
-
-            return model.Id;
-        }
-
         public void ChangeDocumentState(int docId, DocumentState state)
         {
             var model = _context.Documents
@@ -87,36 +55,6 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public async Task<int> Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
-        {
-            var model = _mapper.Map<DocumentCoreDto<int, DocumentToProductCoreDto<int>, int>, Document>(dto);
-
-            _context.Documents.Add(model);
-            _context.SaveChanges();
-
-            var message = new InventoryPayloadValue() { 
-                InvoicingSupplierId = model.SupplierId,
-                InvoicingDocumentId = model.Id,
-                //Items = new Dictionary<ItemsPayloadValue, CRUD>()
-            };
-
-            foreach (var dtp in model.DocumentsToProducts)
-            {
-                message.Items.Add(new ItemsPayloadValue()
-                {
-                    InvoicingDocumentToProductId = dtp.Id,
-                    ProductId = dtp.ProductId,
-                    NumOfAvailable = dtp.Quantity,
-                    ExpirationDate = DateTime.MaxValue,
-                    Crud = CRUD.Create
-                });
-            }
-
-            await SyncAsync(message, CRUD.Create);
-
-            return model.Id;
-        }
-
         public int CreateDocumentType(DocumentTypeCoreDto dto)
         {
             var model = _mapper.Map<DocumentTypeCoreDto, DocumentType>(dto);
@@ -127,12 +65,172 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public void Delete(int docId)
+        public async Task<int> AddProduct(int docId, DocumentToProductCoreDto<int> dto)
         {
-            var model = new Document() { Id = docId };
+            var model = _mapper.Map<DocumentToProductCoreDto<int>, DocumentToProduct>(dto);
+            model.DocumentId = docId;
 
-            _context.Documents.Attach(model);
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                using (var transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        _context.DocumentToProducts.Add(model);
+                        await _context.SaveChangesAsync();
+
+                        model = _context.DocumentToProducts
+                            .AsNoTracking()
+                            .Include(dtp => dtp.Document)
+                            .First(dtp => dtp.Id == model.Id);
+
+                        if (dto.Transfered == false)
+                        {
+                            var message = InventoryPayloadValue.Builder
+                                .InvoicingSupplierId(model.Document.SupplierId)
+                                .InvoicingDocumentId(model.DocumentId)
+                                .AddItem(model, CRUD.Create)
+                                .Build();
+
+                            await SyncAsync(message, CRUD.Update);
+
+                            model.Transfered = true;
+                            _context.DocumentToProducts.Update(model);
+                            _context.SaveChanges();
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw new Exception(ex.Message);
+                    }
+                }
+            });
+
+            return model.Id;
+        }
+
+        public async Task<int> Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
+        {
+            var model = _mapper.Map<DocumentCoreDto<int, DocumentToProductCoreDto<int>, int>, Document>(dto);
+
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                using (var transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        _context.Documents.Add(model);
+                        await _context.SaveChangesAsync();
+
+                        var message = InventoryPayloadValue.Builder
+                            .InvoicingSupplierId(model.SupplierId)
+                            .InvoicingDocumentId(model.Id)
+                            .AddItems(model.DocumentsToProducts, CRUD.Create)
+                            .Build();
+
+                        if (message.Items.Count > 0)
+                        {
+                            await SyncAsync(message, CRUD.Create);
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        throw new Exception(ex.Message);
+                    }
+                }
+            });
+                
+            return model.Id;
+        }
+
+        public async Task Delete(int docId, bool hardReset)
+        {
+            var model = _context.Documents
+                .FirstOrDefault(d => d.Id == docId);
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Document with id {docId} NOT FOUND");
+            }
+
             _context.Documents.Remove(model);
+
+            if (hardReset)
+            {
+                var message = InventoryPayloadValue.Builder
+                    .InvoicingSupplierId(model.SupplierId)
+                    .InvoicingDocumentId(model.Id)
+                    .Build();
+
+                await SyncAsync(message, CRUD.Delete);
+            }
+
+            _context.SaveChanges();
+        }
+
+        public async Task DeleteProduct(int docId, int docProdId, bool hardReset)
+        {
+            var model = _context.DocumentToProducts
+                .Include(dtp => dtp.Document)
+                .FirstOrDefault(dtp => dtp.Id == docProdId && dtp.DocumentId == docId);
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Document Product with id {docProdId} NOT FOUND");
+            }
+
+            _context.DocumentToProducts.Remove(model);
+
+            if (hardReset && model.Transfered == true)
+            {
+                var message = InventoryPayloadValue.Builder
+                    .InvoicingSupplierId(model.Document.SupplierId)
+                    .InvoicingDocumentId(model.DocumentId)
+                    .AddItem(model, CRUD.Delete)
+                    .Build();
+
+                await SyncAsync(message, CRUD.Update);
+            }
+
+            _context.SaveChanges();
+        }
+
+        public async Task TransferProduct(int docId, int docProdId)
+        {
+            var model = _context.DocumentToProducts
+                .AsNoTracking()
+                .Include(dtp => dtp.Document)
+                .FirstOrDefault(dtp => dtp.Id == docProdId && dtp.DocumentId == docId);
+
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Document Product with id {docProdId} NOT FOUND");
+            }
+
+            if (model.Transfered == true)
+            {
+                throw new TransferException($"Document Product with id {docProdId} ALLREADY TRANSFERED");
+            }
+
+            var message = InventoryPayloadValue.Builder
+                .InvoicingSupplierId(model.Document.SupplierId)
+                .InvoicingDocumentId(model.DocumentId)
+                .AddItem(model, CRUD.Create)
+                .Build();
+
+            await SyncAsync(message, CRUD.Update);
+
+            model.Transfered = true;
+            _context.DocumentToProducts.Update(model);
             _context.SaveChanges();
         }
 
@@ -142,15 +240,6 @@ namespace InvoicingMicroservice.Core.Services
 
             _context.DocumentsTypes.Attach(model);
             _context.DocumentsTypes.Remove(model);
-            _context.SaveChanges();
-        }
-
-        public void DeleteProduct(int docId, int docProdId)
-        {
-            var model = new DocumentToProduct() { Id = docProdId, DocumentId = docId };
-
-            _context.DocumentToProducts.Attach(model);
-            _context.DocumentToProducts.Remove(model);
             _context.SaveChanges();
         }
 
@@ -202,7 +291,7 @@ namespace InvoicingMicroservice.Core.Services
             return dto;
         }
 
-        public object Get(int?[] supplierId, int?[] docTypeIds, DocumentState[] docStates, DateTime startDate, DateTime endDate)
+        public object Get(int?[] supplierId, int?[] docTypeIds, DocumentState[] docStates, DateTime? startDate, DateTime? endDate)
         {
             var iquery = _context.Documents
                .AsNoTracking()
@@ -226,20 +315,29 @@ namespace InvoicingMicroservice.Core.Services
                 query = query.Where(d => docStates.Contains(d.State));
             }
 
-            var dtos = query.Where(d => d.Date >= startDate && d.Date <= endDate)
-                .Select(d => new
-                    {
-                        d.Id,
-                        d.SupplierId,
-                        d.Signature,
-                        d.Number,
-                        d.DocumentType,
-                        d.State,
-                        d.Date,
-                        d.Description,
-                    })
-                .ToList()
-                .OrderByDescending(dx => dx.Date);
+            if (startDate is not null)
+            {
+                query = query.Where(d => d.Date >= startDate);
+            }
+
+            if (endDate is not null)
+            {
+                query = query.Where(d => d.Date <= endDate);
+            }
+
+            var dtos = query.Select(d => new
+                {
+                    d.Id,
+                    d.SupplierId,
+                    d.Signature,
+                    d.Number,
+                    d.DocumentType,
+                    d.State,
+                    d.Date,
+                    d.Description,
+                })
+            .ToList()
+            .OrderByDescending(dx => dx.Date);
 
             if (dtos is null)
             {
@@ -300,11 +398,28 @@ namespace InvoicingMicroservice.Core.Services
                 new Uri("rabbitmq://localhost/msinve.inventory.queue"),
             };
 
-            foreach (var u in uri)
+            CancellationTokenSource s_cts = new CancellationTokenSource();
+            s_cts.CancelAfter(5000);
+
+            try
             {
-                var endPoint = await _bus.GetSendEndpoint(u);
-                await endPoint.Send(payload);
+
+                foreach (var u in uri)
+                {
+                    var endPoint = await _bus.GetSendEndpoint(u);
+                    await endPoint.Send(payload, s_cts.Token);
+                }
+
+            } 
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                s_cts.Dispose();
             }
         }
+
     }
 }

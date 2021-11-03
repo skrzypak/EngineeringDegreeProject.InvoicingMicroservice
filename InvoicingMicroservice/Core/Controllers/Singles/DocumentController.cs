@@ -28,8 +28,8 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             [FromQuery] int?[] suppliersId,
             [FromQuery] int?[] docTypeIds,
             [FromQuery] DocumentState[] docStates,
-            [FromQuery] DateTime startDate,
-            [FromQuery] DateTime endDate)
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate)
         {
             var response = _documentService.Get(suppliersId, docTypeIds, docStates, startDate, endDate);
             return Ok(response);
@@ -91,16 +91,23 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         }
 
         [HttpDelete("{docId}")]
-        public ActionResult Delete([FromRoute] int docId)
+        public async Task<ActionResult> Delete([FromRoute] int docId, [FromQuery] bool hardReset)
         {
-            _documentService.Delete(docId);
+            await _documentService.Delete(docId, hardReset);
             return NoContent();
         }
 
         [HttpDelete("{docId}/product/{docProdId}")]
-        public ActionResult DeleteProduct([FromRoute] int docId, [FromRoute] int docProdId)
+        public async Task<ActionResult> DeleteProduct([FromRoute] int docId, [FromRoute] int docProdId, [FromQuery] bool hardReset)
         {
-            _documentService.DeleteProduct(docId, docProdId);
+            await _documentService.DeleteProduct(docId, docProdId, hardReset);
+            return NoContent();
+        }
+
+        [HttpPatch("{docId}/product/{docProdId}/transfer")]
+        public async Task<ActionResult> TransferProduct([FromRoute] int docId, [FromRoute] int docProdId)
+        {
+            await _documentService.TransferProduct(docId, docProdId);
             return NoContent();
         }
 
