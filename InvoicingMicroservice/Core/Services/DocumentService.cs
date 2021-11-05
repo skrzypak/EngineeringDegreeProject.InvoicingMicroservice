@@ -81,7 +81,6 @@ namespace InvoicingMicroservice.Core.Services
                         await _context.SaveChangesAsync();
 
                         model = _context.DocumentToProducts
-                            .AsNoTracking()
                             .Include(dtp => dtp.Document)
                             .First(dtp => dtp.Id == model.Id);
 
@@ -96,8 +95,7 @@ namespace InvoicingMicroservice.Core.Services
                             await SyncAsync(message, CRUD.Update);
 
                             model.Transfered = true;
-                            _context.DocumentToProducts.Update(model);
-                            _context.SaveChanges();
+                            await _context.SaveChangesAsync();
                         }
 
                         transaction.Commit();
@@ -124,6 +122,7 @@ namespace InvoicingMicroservice.Core.Services
                 {
                     try
                     {
+
                         _context.Documents.Add(model);
                         await _context.SaveChangesAsync();
 
@@ -137,6 +136,14 @@ namespace InvoicingMicroservice.Core.Services
                         {
                             await SyncAsync(message, CRUD.Create);
                         }
+
+
+                        foreach (var m in model.DocumentsToProducts)
+                        {
+                            m.Transfered = true;
+                        }
+                        _context.Documents.Update(model);
+                        await _context.SaveChangesAsync();
 
                         transaction.Commit();
                     }
@@ -265,6 +272,7 @@ namespace InvoicingMicroservice.Core.Services
                     {
                         dtp.Id,
                         dtp.Quantity,
+                        dtp.UnitMeasureValue,
                         dtp.UnitNetPrice,
                         dtp.PercentageVat,
                         dtp.NetValue,

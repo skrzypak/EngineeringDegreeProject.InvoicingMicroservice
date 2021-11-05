@@ -10,15 +10,19 @@ namespace Comunication.Shared.PayloadValue
     public class InventoryPayloadValue : IMessage
     {
         public static InventoryPayloadValueBuilder Builder => new();
-        public int InvoicingSupplierId { get; private set; }
-        public int InvoicingDocumentId { get; private set; }
+        public int SupplierId { get; private set; }
+        public int DocumentId { get; private set; }
         public ICollection<ItemsPayloadValue> Items { get; private set; } = new HashSet<ItemsPayloadValue>();
         public class ItemsPayloadValue
         {
             public CRUD Crud { get; set; }
             public int ProductId { get; set; }
-            public int InvoicingDocumentToProductId { get; set; }
-            public ushort NumOfAvailable { get; set; } = 0;
+            public int DocumentToProductId { get; set; }
+            public ushort Quantity { get; set; } = 0;
+            public int UnitMeasureValue { get; set; }
+            public decimal UnitNetPrice { get; set; }
+            public decimal PercentageVat { get; set; }
+            public decimal GrossValue { get; set; }
             public DateTime? ExpirationDate { get; set; }
         }
 
@@ -58,14 +62,21 @@ namespace Comunication.Shared.PayloadValue
 
             public InventoryPayloadValueBuilder AddItem(DocumentToProduct model, CRUD crud)
             {
-                this.items.Add(new ItemsPayloadValue()
+                if (model.Transfered == false)
                 {
-                    InvoicingDocumentToProductId = model.Id,
-                    ProductId = model.ProductId,
-                    NumOfAvailable = model.Quantity,
-                    ExpirationDate = DateTime.MaxValue,
-                    Crud = crud
-                });
+                    this.items.Add(new ItemsPayloadValue()
+                    {
+                        DocumentToProductId = model.Id,
+                        ProductId = model.ProductId,
+                        Quantity = model.Quantity,
+                        UnitMeasureValue = model.UnitMeasureValue,
+                        UnitNetPrice = model.UnitNetPrice,
+                        PercentageVat = model.PercentageVat,
+                        GrossValue = model.GrossValue,
+                        ExpirationDate = DateTime.MaxValue,
+                        Crud = crud
+                    });
+                }
 
                 return this;
             }
@@ -74,8 +85,8 @@ namespace Comunication.Shared.PayloadValue
             {
                 var item = new InventoryPayloadValue
                 {
-                    InvoicingSupplierId = this.invoicingSupplierId,
-                    InvoicingDocumentId = this.invoicingDocumentId,
+                    SupplierId = this.invoicingSupplierId,
+                    DocumentId = this.invoicingDocumentId,
                     Items = this.items
                 };
                 return item;
