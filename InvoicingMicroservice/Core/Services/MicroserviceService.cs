@@ -37,6 +37,7 @@ namespace InvoicingMicroservice.Core.Services
         public object GetProductsSummary(DateTime? startDate, DateTime? endDate, ICollection<int> documentTypesIds, ICollection<DocumentState> documentStates, ICollection<int> productsIds)
         {
             object dtos = _context.Products
+                .AsNoTracking()
                 .Include(p => p.DocumentsToProducts)
                     .ThenInclude(d2p => d2p.Document)
                         .ThenInclude(d => d.DocumentType)
@@ -151,6 +152,7 @@ namespace InvoicingMicroservice.Core.Services
             //    }).ToList();
 
             object dtos = _context.Documents
+                .AsNoTracking()
                 .Include(doc => doc.Supplier)
                 .Include(doc => doc.DocumentType)
                 .Include(doc => doc.DocumentsToProducts)
