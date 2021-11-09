@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace InvoicingMicroservice.Core.Controllers.Singles
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("/api/invoicing/1.0.0/documents")]
     public class DocumentController : ControllerBase
     {
         private readonly ILogger<DocumentController> _logger;
@@ -43,20 +43,20 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return Ok(response);
         }
 
-        [HttpGet("{docId}/product/{docProdId}")]
+        [HttpGet("{docId}/products/{docProdId}")]
         public ActionResult GetProductById([FromRoute] int docId, [FromRoute] int docProdId)
         {
             return NoContent();
         }
 
-        [HttpGet("type")]
+        [HttpGet("types")]
         public ActionResult<object> GetDocumentsTypes()
         {
             var response = _documentService.GetDocumentsTypes();
             return Ok(response);
         }
 
-        [HttpGet("type/{docTypeId}")]
+        [HttpGet("types/{docTypeId}")]
         public ActionResult<object> GetDocumentTypeById([FromRoute] int docTypeId)
         {
             var response = _documentService.GetDocumentTypeById(docTypeId);
@@ -70,14 +70,14 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return CreatedAtAction(nameof(GetById), new { docId = docId }, null);
         }
 
-        [HttpPost("{docId}/product")]
+        [HttpPost("{docId}/products")]
         public async Task<ActionResult> AddProduct([FromRoute] int docId, [FromBody] DocumentToProductCoreDto<int> dto)
         {
             var docProdId = await _documentService.AddProduct(docId, dto);
             return CreatedAtAction(nameof(GetProductById), new { docId = docId, docProdId = docProdId }, null);
         }
 
-        [HttpPost("type")]
+        [HttpPost("types")]
         public ActionResult CreateDocumentType([FromBody] DocumentTypeCoreDto dto)
         {
             var docTypeId = _documentService.CreateDocumentType(dto);
@@ -98,21 +98,21 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return NoContent();
         }
 
-        [HttpDelete("{docId}/product/{docProdId}")]
+        [HttpDelete("{docId}/products/{docProdId}")]
         public async Task<ActionResult> DeleteProduct([FromRoute] int docId, [FromRoute] int docProdId, [FromQuery] bool hardReset)
         {
             await _documentService.DeleteProduct(docId, docProdId, hardReset);
             return NoContent();
         }
 
-        [HttpPatch("{docId}/product/{docProdId}/transfer")]
+        [HttpPatch("{docId}/products/{docProdId}/transfer")]
         public async Task<ActionResult> TransferProduct([FromRoute] int docId, [FromRoute] int docProdId)
         {
             await _documentService.TransferProduct(docId, docProdId);
             return NoContent();
         }
 
-        [HttpDelete("type/{docTypeId}")]
+        [HttpDelete("types/{docTypeId}")]
         public ActionResult DeleteDocumentType([FromRoute] int docTypeId)
         {
             _documentService.DeleteDocumentType(docTypeId);

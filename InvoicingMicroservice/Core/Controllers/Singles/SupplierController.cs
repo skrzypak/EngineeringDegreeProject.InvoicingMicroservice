@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using InvoicingMicroservice.Core.Fluent;
 using InvoicingMicroservice.Core.Interfaces.Services;
 using InvoicingMicroservice.Core.Models.Dto.Supplier;
 using InvoicingMicroservice.Core.Models.Dto.SupplierContactPerson;
@@ -12,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace InvoicingMicroservice.Core.Controllers.Singles
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("/api/invoicing/1.0.0/suppliers")]
     public class SupplierController : ControllerBase
     {
         private readonly ILogger<SupplierController> _logger;
@@ -52,28 +51,28 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return NoContent();
         }
 
-        [HttpGet("{supplierId}/contact/all")]
+        [HttpGet("{supplierId}/contacts/all")]
         public ActionResult<object> GetSuppContactPersons([FromRoute] int supplierId)
         {
             var supplierInformations = _supplierService.GetContactPersons(supplierId);
             return Ok(supplierInformations);
         }
 
-        [HttpGet("{supplierId}/contact/{suppContactPersonId}")]
+        [HttpGet("{supplierId}/contacts/{suppContactPersonId}")]
         public ActionResult<object> GetSuppContactPersonById([FromRoute] int supplierId, [FromRoute] int suppContactPersonId)
         {
             var supplierInformations = _supplierService.GetContactPersonById(supplierId, suppContactPersonId);
             return Ok(supplierInformations);
         }
 
-        [HttpPost("{supplierId}/contact")]
+        [HttpPost("{supplierId}/contacts")]
         public ActionResult CreateContactPerson([FromRoute] int supplierId, [FromBody] SupplierContactPersonCoreDto dto)
         {
             var contactPersonId = _supplierService.CreateContactPerson(supplierId, dto);
             return CreatedAtAction(nameof(GetSuppContactPersonById), new { supplierId = supplierId, suppContactPersonId = contactPersonId }, null);
         }
 
-        [HttpDelete("{id}/contact/{suppContactPersonId}")]
+        [HttpDelete("{id}/contacts/{suppContactPersonId}")]
         public ActionResult DeleteSuppContactPerson([FromRoute] int id, [FromRoute] int suppContactPersonId)
         {
             _supplierService.DeleteContactPerson(id, suppContactPersonId);
