@@ -27,8 +27,8 @@ namespace InvoicingMicroservice.Core.Fluent
             //foreach (var entity in modelBuilder.Model.GetEntityTypes())
             //{
             //    entity.AddProperty("CreatedDate", typeof(DateTime));
-            //    entity.AddProperty("EnterpriseId", typeof(ulong));
-            //    entity.AddProperty("DomainUserId", typeof(ulong));
+            //    entity.AddProperty("EspId", typeof(int));
+            //    entity.AddProperty("EduId", typeof(int));
             //}
 
             modelBuilder.ApplyConfiguration(new DocumentConfiguration());
