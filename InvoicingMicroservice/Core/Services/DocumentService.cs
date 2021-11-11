@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Comunication;
 using Comunication.Shared;
 using Comunication.Shared.PayloadValue;
 using InvoicingMicroservice.Core.Exceptions;
@@ -27,17 +28,20 @@ namespace InvoicingMicroservice.Core.Services
         private readonly MicroserviceContext _context;
         private readonly IMapper _mapper;
         private readonly IBus _bus;
+        private readonly RabbitMq _rabbitMq;
 
         public DocumentService(
             ILogger<DocumentService> logger,
             MicroserviceContext context,
             IMapper mapper,
-            IBus bus)
+            IBus bus,
+            RabbitMq rabbitMq)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
             _bus = bus;
+            _rabbitMq = rabbitMq;
         }
 
         public void ChangeDocumentState(int docId, DocumentState state)
@@ -403,7 +407,7 @@ namespace InvoicingMicroservice.Core.Services
             var payload = new Payload<InventoryPayloadValue>(message, crud);
 
             Uri[] uri = {
-                new Uri("rabbitmq://localhost/msinve.inventory.queue"),
+                new Uri($"{_rabbitMq.Host}/msinve.inventory.queue"),
             };
 
             CancellationTokenSource s_cts = new CancellationTokenSource();

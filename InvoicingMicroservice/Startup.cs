@@ -8,15 +8,14 @@ using InvoicingMicroservice.Comunication.Consumers;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Authentication;
 using System.Collections.Generic;
+using Comunication;
 
 namespace InvoicingMicroservice
 {
@@ -47,15 +46,19 @@ namespace InvoicingMicroservice
             });
 
             #region MassTransit
+            var rabbitMq = new RabbitMq();
+            Configuration.GetSection("RabbitMq").Bind(rabbitMq);
+            services.AddSingleton(rabbitMq);
+
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<ProductConsumer>();
                 x.AddBus(provider => Bus.Factory.CreateUsingRabbitMq(config =>
                 {
-                    config.Host(new Uri("rabbitmq://localhost"), h =>
+                    config.Host(new Uri(rabbitMq.Host), h =>
                     {
-                        h.Username("guest");
-                        h.Password("guest");
+                        h.Username(rabbitMq.Username);
+                        h.Password(rabbitMq.Password);
                     });
 
                     config.ReceiveEndpoint("msinvo.product.queue", ep =>
@@ -77,7 +80,7 @@ namespace InvoicingMicroservice
             #region swagger
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "InvoicingMicroservice", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "EDP-INVOICING-MSV", Version = "v1" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = @"JWT Authorization header using the Bearer scheme. 
@@ -121,12 +124,17 @@ namespace InvoicingMicroservice
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "InvoicingMicroservice v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "EDP-INVOICING-MSV"));
             }
 
-            app.UseMiddleware<IPFilterMiddleware>();
-            app.UseMiddleware<ErrorHandlingMiddleware>();
             app.UseHttpsRedirection();
+
+            if (env.IsDevelopment() == false)
+            {
+                app.UseMiddleware<IPFilterMiddleware>();
+            }
+
+            app.UseMiddleware<ErrorHandlingMiddleware>();
 
             app.UseRouting();
 
