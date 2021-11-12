@@ -39,7 +39,7 @@ namespace Authentication
         public List<int> GetEnterprisesIds()
             => GetClaim_e2ud().Select(i => i.epsId).ToList();
 
-        public List<Claim_e2ud_item> GetClaim_e2ud()
+        public virtual List<Claim_e2ud_item> GetClaim_e2ud()
         {
             if (Header is not null)
             {

@@ -21,6 +21,8 @@ namespace InvoicingMicroservice
 {
     public class Startup
     {
+        private bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -34,7 +36,14 @@ namespace InvoicingMicroservice
             #region Authentication
             services.Configure<ApplicationOptions>(Configuration.GetSection("ApplicationOptions"));
             services.AddScoped<IPFilterMiddleware>();
-            services.AddScoped<IHeaderContextService, HeaderContextService>();
+            if (!isDevelopment)
+            {
+                services.AddScoped<IHeaderContextService, HeaderContextService>();
+            }
+            else
+            {
+                services.AddScoped<IHeaderContextService, HeaderContextServiceDev>();
+            }
             services.AddHttpContextAccessor();
             #endregion 
 

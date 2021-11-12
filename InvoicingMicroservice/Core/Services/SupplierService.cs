@@ -38,7 +38,6 @@ namespace InvoicingMicroservice.Core.Services
             model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
 
             _context.Suppliers.Add(model);
-            _context.Entry(model).Property("CreatedDate").CurrentValue = DateTime.Now;
             _context.SaveChanges();
 
             return model.Id;
@@ -52,7 +51,6 @@ namespace InvoicingMicroservice.Core.Services
             model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
 
             _context.SuppliersContactsPersons.Add(model);
-            _context.Entry(model).Property("CreatedDate").CurrentValue = DateTime.Now;
             _context.SaveChanges();
 
             return model.Id;

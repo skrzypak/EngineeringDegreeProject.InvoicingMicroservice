@@ -70,7 +70,6 @@ namespace InvoicingMicroservice.Core.Services
             model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
 
             _context.DocumentsTypes.Add(model);
-            _context.Entry(model).Property("CreatedDate").CurrentValue = DateTime.Now;
             _context.SaveChanges();
 
             return model.Id;
@@ -91,12 +90,11 @@ namespace InvoicingMicroservice.Core.Services
                     try
                     {
                         _context.DocumentToProducts.Add(model);
-                        _context.Entry(model).Property("CreatedDate").CurrentValue = DateTime.Now;
                         await _context.SaveChangesAsync();
 
                         model = _context.DocumentToProducts
                             .Include(dtp => dtp.Document)
-                            .First(dtp => dtp.Id == model.Id);
+                            .First(dtp => dtp.EspId == enterpriseId && dtp.Id == model.Id);
 
                         if (dto.Transfered == false)
                         {
@@ -142,7 +140,6 @@ namespace InvoicingMicroservice.Core.Services
                     {
 
                         _context.Documents.Add(model);
-                        _context.Entry(model).Property("CreatedDate").CurrentValue = DateTime.Now;
                         await _context.SaveChangesAsync();
 
                         var message = InventoryPayloadValue.Builder

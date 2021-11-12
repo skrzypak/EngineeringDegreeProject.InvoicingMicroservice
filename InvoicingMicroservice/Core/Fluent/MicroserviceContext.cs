@@ -38,5 +38,24 @@ namespace InvoicingMicroservice.Core.Fluent
             modelBuilder.ApplyConfiguration(new SupplierContactPersonConfiguration());
         }
         #endregion
+
+        public override int SaveChanges()
+        {
+            ChangeTracker.DetectChanges();
+
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Property("CreatedDate").CurrentValue = DateTime.Now;
+                }
+
+                if (entry.State == EntityState.Modified)
+                {
+                    entry.Property("LastUpdatedDate").CurrentValue = DateTime.Now;
+                }
+            }
+            return base.SaveChanges();
+        }
     }
 }
