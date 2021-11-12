@@ -21,5 +21,8 @@ namespace InvoicingMicroservice.Core.Fluent.Entities
         public DateTime? ExpirationDate { get; set; }
         public virtual Document Document { get; set; }
         public virtual Product Product { get; set; }
+        public int EspId { get; set; }
+        public int CreatedEudId { get; set; }
+        public int? LastUpdatedEudId { get; set; }
     }
 }

@@ -24,12 +24,11 @@ namespace InvoicingMicroservice.Core.Fluent
         #region Required
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //foreach (var entity in modelBuilder.Model.GetEntityTypes())
-            //{
-            //    entity.AddProperty("CreatedDate", typeof(DateTime));
-            //    entity.AddProperty("EspId", typeof(int));
-            //    entity.AddProperty("EduId", typeof(int));
-            //}
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                entity.AddProperty("CreatedDate", typeof(DateTime));
+                entity.AddProperty("LastUpdatedDate", typeof(DateTime?));
+            }
 
             modelBuilder.ApplyConfiguration(new DocumentConfiguration());
             modelBuilder.ApplyConfiguration(new DocumentToProductConfiguration());

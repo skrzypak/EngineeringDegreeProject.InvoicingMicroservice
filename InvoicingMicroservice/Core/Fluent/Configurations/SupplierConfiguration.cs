@@ -12,7 +12,7 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
     {
         public void Configure(EntityTypeBuilder<Supplier> modelBuilder)
         {
-            modelBuilder.HasKey(s => s.Id);
+            modelBuilder.HasKey(s => new { s.Id, s.EspId });
             modelBuilder.Property(s => s.Id).IsRequired();
 
             modelBuilder.Property(s => s.Nip).HasMaxLength(10).IsRequired();
@@ -31,6 +31,12 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
             modelBuilder.Property(s => s.Homepage).HasMaxLength(300).IsRequired(false);
             modelBuilder.Property(s => s.Archive).HasDefaultValue<bool>(false).IsRequired();
             modelBuilder.Property(s => s.Description).HasMaxLength(3000).IsRequired(false);
+
+            modelBuilder.Property(a => a.EspId).IsRequired();
+            modelBuilder.Property(a => a.CreatedEudId).IsRequired();
+            modelBuilder.Property(a => a.LastUpdatedEudId).IsRequired(false);
+            modelBuilder.Property<DateTime>("CreatedDate").HasDefaultValue<DateTime>(DateTime.Now).IsRequired();
+            modelBuilder.Property<DateTime?>("LastUpdatedDate").HasDefaultValue<DateTime?>(null).IsRequired(false);
 
             modelBuilder.ToTable("Suppliers");
             modelBuilder.Property(s => s.Id).HasColumnName("Id");

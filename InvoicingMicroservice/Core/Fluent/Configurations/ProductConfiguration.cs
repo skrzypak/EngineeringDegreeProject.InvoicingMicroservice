@@ -12,13 +12,19 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
     {
         public void Configure(EntityTypeBuilder<Product> modelBuilder)
         {
-            modelBuilder.HasKey(p => p.Id);
+            modelBuilder.HasKey(p => new { p.Id, p.EspId });
             modelBuilder.Property(p => p.Id).ValueGeneratedNever().IsRequired();
 
             modelBuilder.Property(p => p.Code).HasMaxLength(6).IsRequired(false);
             modelBuilder.Property(p => p.Name).HasMaxLength(300).IsRequired();
             modelBuilder.Property(p => p.Unit).HasConversion<string>().HasMaxLength(10).IsRequired();
             modelBuilder.Property(p => p.Description).HasMaxLength(3000).IsRequired(false);
+
+            modelBuilder.Property(a => a.EspId).IsRequired();
+            modelBuilder.Property(a => a.CreatedEudId).IsRequired();
+            modelBuilder.Property(a => a.LastUpdatedEudId).IsRequired(false);
+            modelBuilder.Property<DateTime>("CreatedDate").HasDefaultValue<DateTime>(DateTime.Now).IsRequired();
+            modelBuilder.Property<DateTime?>("LastUpdatedDate").HasDefaultValue<DateTime?>(null).IsRequired(false);
 
             modelBuilder.ToTable("Products");
             modelBuilder.Property(p => p.Id).HasColumnName("Id");

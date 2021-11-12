@@ -12,17 +12,34 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
     {
         public void Configure(EntityTypeBuilder<Document> modelBuilder)
         {
-            modelBuilder.HasKey(d => d.Id);
-            modelBuilder.Property(d => d.Id).IsRequired();
+            modelBuilder.HasKey(d => new { d.Id, d.SupplierId, d.EspId });
 
+            modelBuilder.Property(d => d.Id).IsRequired();
             modelBuilder.Property(d => d.SupplierId).IsRequired();
             modelBuilder.Property(d => d.DocumentTypeId).IsRequired();
+            modelBuilder.Property(d => d.EspId).IsRequired();
+
+            modelBuilder
+                .HasOne(d => d.Supplier)
+                .WithMany(s => s.Documents)
+                .HasForeignKey(d => new { d.SupplierId, d.EspId })
+                .HasPrincipalKey(s => new { s.Id, s.EspId });
+
+            modelBuilder
+                .HasOne(d => d.DocumentType)
+                .WithMany(dt => dt.Documents)
+                .HasForeignKey(d => new { d.DocumentTypeId, d.EspId })
+                .HasPrincipalKey(dt => new { dt.Id, dt.EspId });
 
             modelBuilder.Property(d => d.Signature).HasMaxLength(300).IsRequired();
             modelBuilder.Property(d => d.Number).IsRequired();
             modelBuilder.Property(d => d.Description).HasMaxLength(3000).IsRequired();
             modelBuilder.Property(d => d.Date).IsRequired();
             modelBuilder.Property(d => d.State).HasConversion<string>().IsRequired();
+            modelBuilder.Property(a => a.CreatedEudId).IsRequired();
+            modelBuilder.Property(a => a.LastUpdatedEudId).IsRequired(false);
+            modelBuilder.Property<DateTime>("CreatedDate").HasDefaultValue<DateTime>(DateTime.Now).IsRequired();
+            modelBuilder.Property<DateTime?>("LastUpdatedDate").HasDefaultValue<DateTime?>(null).IsRequired(false);
 
             modelBuilder.ToTable("Documents");
             modelBuilder.Property(d => d.Id).HasColumnName("Id");

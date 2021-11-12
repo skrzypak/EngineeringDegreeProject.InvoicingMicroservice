@@ -14,5 +14,8 @@ namespace InvoicingMicroservice.Core.Fluent.Entities
         public UnitType Unit { get; set; }
         public string Description { get; set; }
         public virtual ICollection<DocumentToProduct> DocumentsToProducts { get; set; }
+        public int EspId { get; set; }
+        public int CreatedEudId { get; set; }
+        public int? LastUpdatedEudId { get; set; }
     }
 }

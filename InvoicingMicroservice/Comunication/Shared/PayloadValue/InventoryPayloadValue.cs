@@ -25,12 +25,28 @@ namespace Comunication.Shared.PayloadValue
             public decimal GrossValue { get; set; }
             public DateTime? ExpirationDate { get; set; }
         }
+        public int EspId { get; set; }
+        public int EudId { get; set; }
 
         public  class InventoryPayloadValueBuilder 
         {
-            private int invoicingSupplierId;
-            private int invoicingDocumentId;
+            private int invoicingSupplierId = -1;
+            private int invoicingDocumentId = -1;
             private ICollection<ItemsPayloadValue> items = new HashSet<ItemsPayloadValue>();
+            private int espId = -1;
+            private int eudId = -1;
+
+            public InventoryPayloadValueBuilder EnterpriseId(int enterpriseId)
+            {
+                this.espId = enterpriseId;
+                return this;
+            }
+
+            public InventoryPayloadValueBuilder EnterpriseUserDomainId(int enterpriseUserDomainId)
+            {
+                this.eudId = enterpriseUserDomainId;
+                return this;
+            }
 
             public InventoryPayloadValueBuilder InvoicingSupplierId(int invoicingSupplierId)
             {
@@ -83,11 +99,19 @@ namespace Comunication.Shared.PayloadValue
 
             public InventoryPayloadValue Build()
             {
+
+                if (this.espId == -1 || this.eudId == -1 || this.invoicingSupplierId == -1 || this.invoicingDocumentId == -1)
+                {
+                    throw new Exception("Undefined some of obligatory Ids in inventory payload");
+                }
+
                 var item = new InventoryPayloadValue
                 {
                     SupplierId = this.invoicingSupplierId,
                     DocumentId = this.invoicingDocumentId,
-                    Items = this.items
+                    Items = this.items,
+                    EspId = this.espId,
+                    EudId = this.eudId
                 };
                 return item;
             }

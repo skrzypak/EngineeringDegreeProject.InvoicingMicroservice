@@ -8,5 +8,7 @@ namespace InvoicingMicroservice.Core.Fluent.Entities
     public interface IEntity
     {
         public int Id { get; set; }
+        public int CreatedEudId { get; set; }
+        public int? LastUpdatedEudId { get; set; }
     }
 }

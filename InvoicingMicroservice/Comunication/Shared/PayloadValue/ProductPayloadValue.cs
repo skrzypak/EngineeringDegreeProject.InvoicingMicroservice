@@ -15,5 +15,7 @@ namespace Comunication.Shared.PayloadValue
         public string Description { get; set; }
         public UnitType Unit { get; set; }
         public IDictionary<int, CRUD> Allergens { get; set; } = new Dictionary<int, CRUD>();
+        public int EspId { get; set; }
+        public int EudId { get; set; }
     }
 }
