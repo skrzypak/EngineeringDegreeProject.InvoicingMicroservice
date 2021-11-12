@@ -266,9 +266,11 @@ namespace InvoicingMicroservice.Core.Services
 
         public void DeleteDocumentType(int enterpriseId, int docTypeId)
         {
-            var model = new DocumentType() { Id = docTypeId, EspId = enterpriseId };
+            var model = _context.DocumentsTypes
+                .FirstOrDefault(dt =>
+                    dt.Id == docTypeId &&
+                    dt.EspId == enterpriseId);
 
-            _context.DocumentsTypes.Attach(model);
             _context.DocumentsTypes.Remove(model);
             _context.SaveChanges();
         }

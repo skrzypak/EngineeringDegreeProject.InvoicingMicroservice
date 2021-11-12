@@ -13,7 +13,7 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
         public void Configure(EntityTypeBuilder<DocumentToProduct> modelBuilder)
         {
             modelBuilder.HasKey(d => new { d.Id ,d.DocumentId, d.ProductId, d.EspId });
-            modelBuilder.Property(d => d.Id).ValueGeneratedNever().IsRequired();
+            modelBuilder.Property(d => d.Id).ValueGeneratedOnAdd().IsRequired();
 
             modelBuilder.Property(d => d.ProductId).IsRequired();
             modelBuilder.Property(d => d.DocumentId).IsRequired();

@@ -58,18 +58,23 @@ namespace InvoicingMicroservice.Core.Services
 
         public void Delete(int enterpriseId, int supplierId)
         {
-            var model = new Supplier() { Id = supplierId, EspId = enterpriseId };
+            var model = _context.Suppliers
+                .FirstOrDefault(s =>
+                    s.Id == supplierId &&
+                    s.EspId == enterpriseId);
 
-            _context.Suppliers.Attach(model);
             _context.Suppliers.Remove(model);
             _context.SaveChanges();
         }
 
         public void DeleteContactPerson(int enterpriseId, int supplierId, int suppContactPersonId)
         {
-            var model = new SupplierContactPerson() { Id = suppContactPersonId, SupplierId = supplierId, EspId = enterpriseId };
+            var model = _context.SuppliersContactsPersons
+                .FirstOrDefault(s =>
+                    s.Id == suppContactPersonId &&
+                    s.SupplierId == supplierId &&
+                    s.EspId == enterpriseId);
 
-            _context.SuppliersContactsPersons.Attach(model);
             _context.SuppliersContactsPersons.Remove(model);
             _context.SaveChanges();
         }
