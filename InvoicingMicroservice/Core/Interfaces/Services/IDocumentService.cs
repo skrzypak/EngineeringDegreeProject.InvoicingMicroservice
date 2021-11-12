@@ -9,17 +9,17 @@ namespace InvoicingMicroservice.Core.Interfaces.Services
 {
     public interface IDocumentService
     {
-        public object Get(int?[] supplierIds, int?[] docTypeIds, DocumentState[] docStates, DateTime? startDate, DateTime? endDate);
-        public object GetById(int docId);
-        public Task<int> Create(DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto);
-        public Task<int> AddProduct(int docId, DocumentToProductCoreDto<int> dto);
-        public Task TransferProduct(int docId, int docProdId);
-        public void ChangeDocumentState(int docId, DocumentState state);
-        public Task Delete(int docId, bool hardReset);
-        public Task DeleteProduct(int docId, int docProdId, bool hardReset);
-        public int CreateDocumentType(DocumentTypeCoreDto dto);
-        public void DeleteDocumentType(int docTypeId);
-        public object GetDocumentTypeById(int docTypeId);
-        public object GetDocumentsTypes();
+        public object Get(int enterpriseId, int?[] supplierIds, int?[] docTypeIds, DocumentState[] docStates, DateTime? startDate, DateTime? endDate);
+        public object GetById(int enterpriseId, int docId);
+        public Task<int> Create(int enterpriseId, DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto);
+        public Task<int> AddProduct(int enterpriseId, int docId, DocumentToProductCoreDto<int> dto);
+        public Task TransferProduct(int enterpriseId, int docId, int docProdId);
+        public void ChangeDocumentState(int enterpriseId, int docId, DocumentState state);
+        public Task Delete(int enterpriseId, int docId, bool hardReset);
+        public Task DeleteProduct(int enterpriseId, int docId, int docProdId, bool hardReset);
+        public int CreateDocumentType(int enterpriseId, DocumentTypeCoreDto dto);
+        public void DeleteDocumentType(int enterpriseId, int docTypeId);
+        public object GetDocumentTypeById(int enterpriseId, int docTypeId);
+        public object GetDocumentsTypes(int enterpriseId);
     }
 }

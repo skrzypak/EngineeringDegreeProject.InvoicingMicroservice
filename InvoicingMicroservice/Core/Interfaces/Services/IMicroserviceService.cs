@@ -7,6 +7,7 @@ namespace InvoicingMicroservice.Core.Interfaces.Services
     public interface IMicroserviceService
     {
         public object GetSuppliersProductSummary(
+            int enterpriseId,
             DateTime? startDate,
             DateTime? endDate,
             ICollection<int> suppliersIds,
@@ -16,6 +17,7 @@ namespace InvoicingMicroservice.Core.Interfaces.Services
         );
 
         public object GetProductsSummary(
+            int enterpriseId,
             DateTime? startDate,
             DateTime? endDate,
             ICollection<int> documentTypesIds,

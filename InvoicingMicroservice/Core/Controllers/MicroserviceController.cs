@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace MicroserviceController.Core.Controllers
 {
     [ApiController]
-    [Route("/api/invoicing/1.0.0/msv")]
+    [Route("/api/invoicing/1.0.0/{enterpriseId}/msv")]
     public class MicroserviceController : ControllerBase
     {
         private readonly ILogger<MicroserviceController> _logger;
@@ -24,6 +24,7 @@ namespace MicroserviceController.Core.Controllers
 
         [HttpGet("suppliers-products-summary")]
         public ActionResult<object> GetSuppliersProductSummary(
+            [FromRoute] int enterpriseId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate,
             [FromQuery] ICollection<int> suppliersIds,
@@ -32,12 +33,13 @@ namespace MicroserviceController.Core.Controllers
             [FromQuery] ICollection<int> productsIds
             )
         {
-            var response = _microserviceService.GetSuppliersProductSummary(startDate, endDate, suppliersIds, documentTypesIds, documentStates, productsIds);
+            var response = _microserviceService.GetSuppliersProductSummary(enterpriseId, startDate, endDate, suppliersIds, documentTypesIds, documentStates, productsIds);
             return Ok(response);
         }
 
         [HttpGet("products-summary")]
         public ActionResult<object> GetProductsSummary(
+            [FromRoute] int enterpriseId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate,
             [FromQuery] ICollection<int> documentTypesIds,
@@ -45,7 +47,7 @@ namespace MicroserviceController.Core.Controllers
             [FromQuery] ICollection<int> productsIds
             )
         {
-            var response = _microserviceService.GetProductsSummary(startDate, endDate, documentTypesIds, documentStates, productsIds);
+            var response = _microserviceService.GetProductsSummary(enterpriseId, startDate, endDate, documentTypesIds, documentStates, productsIds);
             return Ok(response);
         }
     }
