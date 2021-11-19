@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Authentication;
 using AutoMapper;
 using InvoicingMicroservice.Core.Exceptions;
 using InvoicingMicroservice.Core.Fluent;
@@ -18,24 +17,21 @@ namespace InvoicingMicroservice.Core.Services
         private readonly ILogger<SupplierService> _logger;
         private readonly MicroserviceContext _context;
         private readonly IMapper _mapper;
-        private readonly IHeaderContextService _headerContextService;
 
         public SupplierService(ILogger<SupplierService> logger,
             MicroserviceContext context,
-            IMapper mapper,
-            IHeaderContextService headerContextService)
+            IMapper mapper)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
-            _headerContextService = headerContextService;
         }
 
-        public int Create(int enterpriseId, SupplierCoreDto<SupplierContactPersonCoreDto> dto)
+        public int Create(int espId, int eudId, SupplierCoreDto<SupplierContactPersonCoreDto> dto)
         {
             var model = _mapper.Map<SupplierCoreDto<SupplierContactPersonCoreDto>, Supplier>(dto);
-            model.EspId = enterpriseId;
-            model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
+            model.EspId = espId;
+            model.CreatedEudId = eudId;
 
             _context.Suppliers.Add(model);
             _context.SaveChanges();
@@ -43,12 +39,12 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public int CreateContactPerson(int enterpriseId, int suppId, SupplierContactPersonCoreDto dto)
+        public int CreateContactPerson(int espId, int eudId, int suppId, SupplierContactPersonCoreDto dto)
         {
             var model = _mapper.Map<SupplierContactPersonCoreDto, SupplierContactPerson>(dto);
             model.SupplierId = suppId;
-            model.EspId = enterpriseId;
-            model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
+            model.EspId = espId;
+            model.CreatedEudId = eudId;
 
             _context.SuppliersContactsPersons.Add(model);
             _context.SaveChanges();
@@ -56,34 +52,34 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public void Delete(int enterpriseId, int supplierId)
+        public void Delete(int espId, int eudId, int supplierId)
         {
             var model = _context.Suppliers
                 .FirstOrDefault(s =>
                     s.Id == supplierId &&
-                    s.EspId == enterpriseId);
+                    s.EspId == espId);
 
             _context.Suppliers.Remove(model);
             _context.SaveChanges();
         }
 
-        public void DeleteContactPerson(int enterpriseId, int supplierId, int suppContactPersonId)
+        public void DeleteContactPerson(int espId, int eudId, int supplierId, int suppContactPersonId)
         {
             var model = _context.SuppliersContactsPersons
                 .FirstOrDefault(s =>
                     s.Id == suppContactPersonId &&
                     s.SupplierId == supplierId &&
-                    s.EspId == enterpriseId);
+                    s.EspId == espId);
 
             _context.SuppliersContactsPersons.Remove(model);
             _context.SaveChanges();
         }
 
-        public object GetContactPersons(int enterpriseId, int supplierId)
+        public object GetContactPersons(int espId, int supplierId)
         {
             var model = _context.SuppliersContactsPersons
                 .AsNoTracking()
-                .Where(scp => scp.EspId == enterpriseId && scp.SupplierId == supplierId)
+                .Where(scp => scp.EspId == espId && scp.SupplierId == supplierId)
                 .Select(scp => new {
                         scp.Id,
                         scp.FirstName,
@@ -103,11 +99,11 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object GetContactPersonById(int enterpriseId, int supplierId, int suppContactPersonId)
+        public object GetContactPersonById(int espId, int supplierId, int suppContactPersonId)
         {
             var model = _context.SuppliersContactsPersons
                 .AsNoTracking()
-                .Where(scp => scp.EspId == enterpriseId && scp.SupplierId == supplierId && scp.Id == suppContactPersonId)
+                .Where(scp => scp.EspId == espId && scp.SupplierId == supplierId && scp.Id == suppContactPersonId)
                 .Select(scp => new
                 {
                     scp.Id,
@@ -126,11 +122,11 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object GetById(int enterpriseId, int supplierId)
+        public object GetById(int espId, int supplierId)
         {
             var model = _context.Suppliers
                 .AsNoTracking()
-                .Where(s => s.EspId == enterpriseId && s.Id == supplierId)
+                .Where(s => s.EspId == espId && s.Id == supplierId)
                 .Include(s => s.SupplierContactPersons)
                 .Select(s => new
                 {
@@ -185,12 +181,12 @@ namespace InvoicingMicroservice.Core.Services
             return model;
         }
 
-        public object Get(int enterpriseId)
+        public object Get(int espId)
         {
             var model = _context.Suppliers
                 .AsNoTracking()
                 .Include(s => s.SupplierContactPersons)
-                .Where(s => s.EspId == enterpriseId)
+                .Where(s => s.EspId == espId)
                 .Select(s => new
                 {
                     s.Id,

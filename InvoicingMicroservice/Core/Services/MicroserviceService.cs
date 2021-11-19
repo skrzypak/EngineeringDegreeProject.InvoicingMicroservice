@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Authentication;
 using InvoicingMicroservice.Core.Exceptions;
 using InvoicingMicroservice.Core.Fluent;
 using InvoicingMicroservice.Core.Fluent.Enums;
@@ -15,26 +14,23 @@ namespace InvoicingMicroservice.Core.Services
     {
         private readonly ILogger<DocumentService> _logger;
         private readonly MicroserviceContext _context;
-        private readonly IHeaderContextService _headerContextService;
 
         public MicroserviceService(
             ILogger<DocumentService> logger,
-            MicroserviceContext context,
-            IHeaderContextService headerContextService)
+            MicroserviceContext context)
         {
             _logger = logger;
             _context = context;
-            _headerContextService = headerContextService;
         }
 
-        public object GetProductsSummary(int enterpriseId, DateTime? startDate, DateTime? endDate, ICollection<int> documentTypesIds, ICollection<DocumentState> documentStates, ICollection<int> productsIds)
+        public object GetProductsSummary(int espId, DateTime? startDate, DateTime? endDate, ICollection<int> documentTypesIds, ICollection<DocumentState> documentStates, ICollection<int> productsIds)
         {
             object dtos = _context.Products
                 .AsNoTracking()
                 .Include(p => p.DocumentsToProducts)
                     .ThenInclude(d2p => d2p.Document)
                         .ThenInclude(d => d.DocumentType)
-                .Where(p => p.EspId == enterpriseId)
+                .Where(p => p.EspId == espId)
                 .Select(p => new
                 {
                     p.Id,
@@ -75,7 +71,7 @@ namespace InvoicingMicroservice.Core.Services
             return dtos;
         }
 
-        public object GetSuppliersProductSummary(int enterpriseId, DateTime? startDate, DateTime? endDate, ICollection<int> suppliersIds, ICollection<int> documentTypesIds, ICollection<DocumentState> documentStates, ICollection<int> productsIds)
+        public object GetSuppliersProductSummary(int espId, DateTime? startDate, DateTime? endDate, ICollection<int> suppliersIds, ICollection<int> documentTypesIds, ICollection<DocumentState> documentStates, ICollection<int> productsIds)
         {
             //object dtos = _context.Documents
             //    .Include(doc => doc.Supplier)
@@ -151,7 +147,7 @@ namespace InvoicingMicroservice.Core.Services
                 .Include(doc => doc.DocumentType)
                 .Include(doc => doc.DocumentsToProducts)
                     .ThenInclude(d2p => d2p.Product)
-                .Where(doc => doc.EspId == enterpriseId)
+                .Where(doc => doc.EspId == espId)
                 .Select(doc => new
                 {
                     doc.SupplierId,

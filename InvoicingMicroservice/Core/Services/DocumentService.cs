@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Authentication;
 using AutoMapper;
 using Comunication;
 using Comunication.Shared;
@@ -28,46 +27,43 @@ namespace InvoicingMicroservice.Core.Services
         private readonly IMapper _mapper;
         private readonly IBus _bus;
         private readonly RabbitMq _rabbitMq;
-        private readonly IHeaderContextService _headerContextService;
 
         public DocumentService(
             ILogger<DocumentService> logger,
             MicroserviceContext context,
             IMapper mapper,
             IBus bus,
-            RabbitMq rabbitMq,
-            IHeaderContextService headerContextService)
+            RabbitMq rabbitMq)
         {
             _logger = logger;
             _context = context;
             _mapper = mapper;
             _bus = bus;
             _rabbitMq = rabbitMq;
-            _headerContextService = headerContextService;
         }
 
-        public void ChangeDocumentState(int enterpriseId, int docId, DocumentState state)
+        public void ChangeDocumentState(int espId, int eudId, int docId, DocumentState state)
         {
             var model = _context.Documents
-                .FirstOrDefault(d => d.EspId == enterpriseId && d.Id == docId);
+                .FirstOrDefault(d => d.EspId == espId && d.Id == docId);
 
             if(model is null)
             {
                 throw new NotFoundException($"Document with id {docId} NOT FOUND");
             }
 
-            model.LastUpdatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
+            model.LastUpdatedEudId = eudId;
 
             model.State = state;
             _context.Entry(model).Property("LastUpdatedDate").CurrentValue = DateTime.Now;
             _context.SaveChanges();
         }
 
-        public int CreateDocumentType(int enterpriseId, DocumentTypeCoreDto dto)
+        public int CreateDocumentType(int espId, int eudId, DocumentTypeCoreDto dto)
         {
             var model = _mapper.Map<DocumentTypeCoreDto, DocumentType>(dto);
-            model.EspId = enterpriseId;
-            model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
+            model.EspId = espId;
+            model.CreatedEudId = eudId;
 
             _context.DocumentsTypes.Add(model);
             _context.SaveChanges();
@@ -75,12 +71,12 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public async Task<int> AddProduct(int enterpriseId, int docId, DocumentToProductCoreDto<int> dto)
+        public async Task<int> AddProduct(int espId, int eudId, int docId, DocumentToProductCoreDto<int> dto)
         {
             var model = _mapper.Map<DocumentToProductCoreDto<int>, DocumentToProduct>(dto);
             model.DocumentId = docId;
-            model.EspId = enterpriseId;
-            model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
+            model.EspId = espId;
+            model.CreatedEudId = eudId;
 
             var strategy = _context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
@@ -94,15 +90,15 @@ namespace InvoicingMicroservice.Core.Services
 
                         model = _context.DocumentToProducts
                             .Include(dtp => dtp.Document)
-                            .First(dtp => dtp.EspId == enterpriseId && dtp.Id == model.Id);
+                            .First(dtp => dtp.EspId == espId && dtp.Id == model.Id);
 
                         if (dto.Transfered == false)
                         {
                             var message = InventoryPayloadValue.Builder
                                 .InvoicingSupplierId(model.Document.SupplierId)
                                 .InvoicingDocumentId(model.DocumentId)
-                                .EnterpriseId(enterpriseId)
-                                .EnterpriseUserDomainId(_headerContextService.GetEnterpriseUserDomainId(enterpriseId))
+                                .EnterpriseId(espId)
+                                .EnterpriseUserDomainId(eudId)
                                 .AddItem(model, CRUD.Create)
                                 .Build();
 
@@ -125,11 +121,11 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public async Task<int> Create(int enterpriseId, DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
+        public async Task<int> Create(int espId, int eudId, DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
             var model = _mapper.Map<DocumentCoreDto<int, DocumentToProductCoreDto<int>, int>, Document>(dto);
-            model.EspId = enterpriseId;
-            model.CreatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
+            model.EspId = espId;
+            model.CreatedEudId = eudId;
 
             var strategy = _context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () =>
@@ -145,8 +141,8 @@ namespace InvoicingMicroservice.Core.Services
                         var message = InventoryPayloadValue.Builder
                             .InvoicingSupplierId(model.SupplierId)
                             .InvoicingDocumentId(model.Id)
-                            .EnterpriseId(enterpriseId)
-                            .EnterpriseUserDomainId(_headerContextService.GetEnterpriseUserDomainId(enterpriseId))
+                            .EnterpriseId(espId)
+                            .EnterpriseUserDomainId(eudId)
                             .AddItems(model.DocumentsToProducts, CRUD.Create)
                             .Build();
 
@@ -175,10 +171,10 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
-        public async Task Delete(int enterpriseId, int docId, bool hardReset)
+        public async Task Delete(int espId, int eudId, int docId, bool hardReset)
         {
             var model = _context.Documents
-                .FirstOrDefault(d => d.EspId == enterpriseId && d.Id == docId);
+                .FirstOrDefault(d => d.EspId == espId && d.Id == docId);
 
             if (model is null)
             {
@@ -192,8 +188,8 @@ namespace InvoicingMicroservice.Core.Services
                 var message = InventoryPayloadValue.Builder
                     .InvoicingSupplierId(model.SupplierId)
                     .InvoicingDocumentId(model.Id)
-                    .EnterpriseId(enterpriseId)
-                    .EnterpriseUserDomainId(_headerContextService.GetEnterpriseUserDomainId(enterpriseId))
+                    .EnterpriseId(espId)
+                    .EnterpriseUserDomainId(eudId)
                     .Build();
 
                 await SyncAsync(message, CRUD.Delete);
@@ -202,11 +198,11 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public async Task DeleteProduct(int enterpriseId, int docId, int docProdId, bool hardReset)
+        public async Task DeleteProduct(int espId, int eudId, int docId, int docProdId, bool hardReset)
         {
             var model = _context.DocumentToProducts
                 .Include(dtp => dtp.Document)
-                .FirstOrDefault(dtp => dtp.EspId == enterpriseId && dtp.Id == docProdId && dtp.DocumentId == docId);
+                .FirstOrDefault(dtp => dtp.EspId == espId && dtp.Id == docProdId && dtp.DocumentId == docId);
 
             if (model is null)
             {
@@ -229,14 +225,14 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public async Task TransferProduct(int enterpriseId, int docId, int docProdId)
+        public async Task TransferProduct(int espId, int eudId, int docId, int docProdId)
         {
             var model = _context.DocumentToProducts
                 .AsNoTracking()
                 .Include(dtp => dtp.Document)
-                .FirstOrDefault(dtp => dtp.EspId == enterpriseId && dtp.Id == docProdId && dtp.DocumentId == docId);
+                .FirstOrDefault(dtp => dtp.EspId == espId && dtp.Id == docProdId && dtp.DocumentId == docId);
 
-            model.LastUpdatedEudId = _headerContextService.GetEnterpriseUserDomainId(enterpriseId);
+            model.LastUpdatedEudId = eudId;
 
             if (model is null)
             {
@@ -251,8 +247,8 @@ namespace InvoicingMicroservice.Core.Services
             var message = InventoryPayloadValue.Builder
                 .InvoicingSupplierId(model.Document.SupplierId)
                 .InvoicingDocumentId(model.DocumentId)
-                .EnterpriseId(enterpriseId)
-                .EnterpriseUserDomainId(_headerContextService.GetEnterpriseUserDomainId(enterpriseId))
+                .EnterpriseId(espId)
+                .EnterpriseUserDomainId(eudId)
                 .AddItem(model, CRUD.Create)
                 .Build();
 
@@ -264,18 +260,18 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
         }
 
-        public void DeleteDocumentType(int enterpriseId, int docTypeId)
+        public void DeleteDocumentType(int espId, int eudId, int docTypeId)
         {
             var model = _context.DocumentsTypes
                 .FirstOrDefault(dt =>
                     dt.Id == docTypeId &&
-                    dt.EspId == enterpriseId);
+                    dt.EspId == espId);
 
             _context.DocumentsTypes.Remove(model);
             _context.SaveChanges();
         }
 
-        public object GetById(int enterpriseId, int docId)
+        public object GetById(int espId, int docId)
         {
             var dto = _context.Documents
                 .AsNoTracking()
@@ -283,7 +279,7 @@ namespace InvoicingMicroservice.Core.Services
                 .Include(d => d.DocumentType)
                 .Include(d => d.DocumentsToProducts)
                     .ThenInclude(dtp => dtp.Product)
-                .Where(d => d.EspId == enterpriseId &&  d.Id == docId)
+                .Where(d => d.EspId == espId &&  d.Id == docId)
                 .Select(d => new
                 {
                     d.Id,
@@ -324,13 +320,13 @@ namespace InvoicingMicroservice.Core.Services
             return dto;
         }
 
-        public object Get(int enterpriseId, int?[] supplierId, int?[] docTypeIds, DocumentState[] docStates, DateTime? startDate, DateTime? endDate)
+        public object Get(int espId, int?[] supplierId, int?[] docTypeIds, DocumentState[] docStates, DateTime? startDate, DateTime? endDate)
         {
             var iquery = _context.Documents
                .AsNoTracking()
                .Include(d => d.Supplier)
                .Include(d => d.DocumentType)
-               .Where(d => d.EspId == enterpriseId);
+               .Where(d => d.EspId == espId);
 
             IQueryable<Document> query = iquery;
 
@@ -381,11 +377,11 @@ namespace InvoicingMicroservice.Core.Services
             return dtos;
         }
 
-        public object GetDocumentsTypes(int enterpriseId)
+        public object GetDocumentsTypes(int espId)
         {
             var dto = _context.DocumentsTypes
                 .AsNoTracking()
-                .Where(dt => dt.EspId == enterpriseId)
+                .Where(dt => dt.EspId == espId)
                 .Select(d => new
                 {
                     d.Id,
@@ -403,11 +399,11 @@ namespace InvoicingMicroservice.Core.Services
             return dto;
         }
 
-        public object GetDocumentTypeById(int enterpriseId, int docTypeId)
+        public object GetDocumentTypeById(int espId, int docTypeId)
         {
             var dto = _context.DocumentsTypes
                 .AsNoTracking()
-                .Where(d => d.EspId == enterpriseId && d.Id == docTypeId)
+                .Where(d => d.EspId == espId && d.Id == docTypeId)
                 .Select(d => new
                 {
                     d.Id,

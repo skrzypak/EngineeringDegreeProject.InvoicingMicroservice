@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using Authentication;
 using System.Threading.Tasks;
 using InvoicingMicroservice.Core.Fluent.Enums;
 using InvoicingMicroservice.Core.Interfaces.Services;
@@ -12,111 +12,121 @@ using Microsoft.Extensions.Logging;
 namespace InvoicingMicroservice.Core.Controllers.Singles
 {
     [ApiController]
-    [Route("/api/invoicing/1.0.0/{enterpriseId}/documents")]
+    [Route("/api/invoicing/1.0.0/documents")]
     public class DocumentController : ControllerBase
     {
         private readonly ILogger<DocumentController> _logger;
         private readonly IDocumentService _documentService;
+        private readonly IHeaderContextService _headerContextService;
 
-        public DocumentController(ILogger<DocumentController> logger, IDocumentService documentService)
+        public DocumentController(ILogger<DocumentController> logger, IDocumentService documentService, IHeaderContextService headerContextService)
         {
             _logger = logger;
             _documentService = documentService;
+            _headerContextService = headerContextService;
         }
 
         [HttpGet]
         public ActionResult<object> Get(
-            [FromRoute] int enterpriseId,
+            [FromRoute] int espId,
             [FromQuery] int?[] suppliersId,
             [FromQuery] int?[] docTypeIds,
             [FromQuery] DocumentState[] docStates,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate)
         {
-            var response = _documentService.Get(enterpriseId, suppliersId, docTypeIds, docStates, startDate, endDate);
+            var response = _documentService.Get(espId, suppliersId, docTypeIds, docStates, startDate, endDate);
             return Ok(response);
         }
 
         [HttpGet("{docId}")]
-        public ActionResult<object> GetById([FromRoute] int enterpriseId, [FromRoute] int docId)
+        public ActionResult<object> GetById([FromQuery] int espId, [FromRoute] int docId)
         {
-            var response = _documentService.GetById(enterpriseId, docId);
+            var response = _documentService.GetById(espId, docId);
             return Ok(response);
         }
 
         [HttpGet("{docId}/products/{docProdId}")]
-        public ActionResult GetProductById([FromRoute] int enterpriseId, [FromRoute] int docId, [FromRoute] int docProdId)
+        public ActionResult GetProductById([FromQuery] int espId, [FromRoute] int docId, [FromRoute] int docProdId)
         {
             return NoContent();
         }
 
         [HttpGet("types")]
-        public ActionResult<object> GetDocumentsTypes([FromRoute] int enterpriseId)
+        public ActionResult<object> GetDocumentsTypes([FromQuery] int espId)
         {
-            var response = _documentService.GetDocumentsTypes(enterpriseId);
+            var response = _documentService.GetDocumentsTypes(espId);
             return Ok(response);
         }
 
         [HttpGet("types/{docTypeId}")]
-        public ActionResult<object> GetDocumentTypeById([FromRoute] int enterpriseId, [FromRoute] int docTypeId)
+        public ActionResult<object> GetDocumentTypeById([FromQuery] int espId, [FromRoute] int docTypeId)
         {
-            var response = _documentService.GetDocumentTypeById(enterpriseId, docTypeId);
+            var response = _documentService.GetDocumentTypeById(espId, docTypeId);
             return Ok(response);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create([FromRoute] int enterpriseId, [FromBody] DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
+        public async Task<ActionResult> Create([FromQuery] int espId, [FromBody] DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
-            var docId = await _documentService.Create(enterpriseId, dto);
-            return CreatedAtAction(nameof(GetById), new { enterpriseId = enterpriseId, docId = docId }, null);
+            int eudId = _headerContextService.GetEudId();
+            var docId = await _documentService.Create(espId, eudId, dto);
+            return CreatedAtAction(nameof(GetById), new { espId = espId, docId = docId }, null);
         }
 
         [HttpPost("{docId}/products")]
-        public async Task<ActionResult> AddProduct([FromRoute] int enterpriseId, [FromRoute] int docId, [FromBody] DocumentToProductCoreDto<int> dto)
+        public async Task<ActionResult> AddProduct([FromQuery] int espId, [FromRoute] int docId, [FromBody] DocumentToProductCoreDto<int> dto)
         {
-            var docProdId = await _documentService.AddProduct(enterpriseId, docId, dto);
-            return CreatedAtAction(nameof(GetProductById), new { enterpriseId = enterpriseId, docId = docId, docProdId = docProdId }, null);
+            int eudId = _headerContextService.GetEudId();
+            var docProdId = await _documentService.AddProduct(espId, eudId, docId, dto);
+            return CreatedAtAction(nameof(GetProductById), new { espId = espId, docId = docId, docProdId = docProdId }, null);
         }
 
         [HttpPost("types")]
-        public ActionResult CreateDocumentType([FromRoute] int enterpriseId, [FromBody] DocumentTypeCoreDto dto)
+        public ActionResult CreateDocumentType([FromQuery] int espId, [FromBody] DocumentTypeCoreDto dto)
         {
-            var docTypeId = _documentService.CreateDocumentType(enterpriseId, dto);
-            return CreatedAtAction(nameof(GetDocumentTypeById), new { enterpriseId = enterpriseId, docTypeId = docTypeId }, null);
+            int eudId = _headerContextService.GetEudId();
+            var docTypeId = _documentService.CreateDocumentType(espId, eudId, dto);
+            return CreatedAtAction(nameof(GetDocumentTypeById), new { espId = espId, docTypeId = docTypeId }, null);
         }
 
         [HttpPatch("{docId}/change/state")]
-        public ActionResult ChangeDocumentState([FromRoute] int enterpriseId, [FromRoute] int docId, [FromQuery] DocumentState state)
+        public ActionResult ChangeDocumentState([FromQuery] int espId, [FromRoute] int docId, [FromQuery] DocumentState state)
         {
-            _documentService.ChangeDocumentState(enterpriseId, docId, state);
+            int eudId = _headerContextService.GetEudId();
+            _documentService.ChangeDocumentState(espId, eudId, docId, state);
             return NoContent();
         }
 
         [HttpDelete("{docId}")]
-        public async Task<ActionResult> Delete([FromRoute] int enterpriseId, [FromRoute] int docId, [FromQuery] bool hardReset)
+        public async Task<ActionResult> Delete([FromQuery] int espId, [FromRoute] int docId, [FromQuery] bool hardReset)
         {
-            await _documentService.Delete(enterpriseId, docId, hardReset);
+            int eudId = _headerContextService.GetEudId();
+            await _documentService.Delete(espId, eudId, docId, hardReset);
             return NoContent();
         }
 
         [HttpDelete("{docId}/products/{docProdId}")]
-        public async Task<ActionResult> DeleteProduct([FromRoute] int enterpriseId, [FromRoute] int docId, [FromRoute] int docProdId, [FromQuery] bool hardReset)
+        public async Task<ActionResult> DeleteProduct([FromQuery] int espId, [FromRoute] int docId, [FromRoute] int docProdId, [FromQuery] bool hardReset)
         {
-            await _documentService.DeleteProduct(enterpriseId, docId, docProdId, hardReset);
+            int eudId = _headerContextService.GetEudId();
+            await _documentService.DeleteProduct(espId, eudId, docId, docProdId, hardReset);
             return NoContent();
         }
 
         [HttpPatch("{docId}/products/{docProdId}/transfer")]
-        public async Task<ActionResult> TransferProduct([FromRoute] int enterpriseId, [FromRoute] int docId, [FromRoute] int docProdId)
+        public async Task<ActionResult> TransferProduct([FromQuery] int espId, [FromRoute] int docId, [FromRoute] int docProdId)
         {
-            await _documentService.TransferProduct(enterpriseId, docId, docProdId);
+            int eudId = _headerContextService.GetEudId();
+            await _documentService.TransferProduct(espId, eudId, docId, docProdId);
             return NoContent();
         }
 
         [HttpDelete("types/{docTypeId}")]
-        public ActionResult DeleteDocumentType([FromRoute] int enterpriseId, [FromRoute] int docTypeId)
+        public ActionResult DeleteDocumentType([FromQuery] int espId, [FromRoute] int docTypeId)
         {
-            _documentService.DeleteDocumentType(enterpriseId, docTypeId);
+            int eudId = _headerContextService.GetEudId();
+            _documentService.DeleteDocumentType(espId, eudId, docTypeId);
             return NoContent();
         }
 

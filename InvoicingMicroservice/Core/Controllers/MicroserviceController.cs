@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using InvoicingMicroservice.Core.Fluent.Enums;
 using InvoicingMicroservice.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace MicroserviceController.Core.Controllers
 {
     [ApiController]
-    [Route("/api/invoicing/1.0.0/{enterpriseId}/msv")]
+    [Route("/api/invoicing/1.0.0/msv")]
     public class MicroserviceController : ControllerBase
     {
         private readonly ILogger<MicroserviceController> _logger;
@@ -24,7 +22,7 @@ namespace MicroserviceController.Core.Controllers
 
         [HttpGet("suppliers-products-summary")]
         public ActionResult<object> GetSuppliersProductSummary(
-            [FromRoute] int enterpriseId,
+            [FromQuery] int espId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate,
             [FromQuery] ICollection<int> suppliersIds,
@@ -33,13 +31,13 @@ namespace MicroserviceController.Core.Controllers
             [FromQuery] ICollection<int> productsIds
             )
         {
-            var response = _microserviceService.GetSuppliersProductSummary(enterpriseId, startDate, endDate, suppliersIds, documentTypesIds, documentStates, productsIds);
+            var response = _microserviceService.GetSuppliersProductSummary(espId, startDate, endDate, suppliersIds, documentTypesIds, documentStates, productsIds);
             return Ok(response);
         }
 
         [HttpGet("products-summary")]
         public ActionResult<object> GetProductsSummary(
-            [FromRoute] int enterpriseId,
+            [FromQuery] int espId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate,
             [FromQuery] ICollection<int> documentTypesIds,
@@ -47,7 +45,7 @@ namespace MicroserviceController.Core.Controllers
             [FromQuery] ICollection<int> productsIds
             )
         {
-            var response = _microserviceService.GetProductsSummary(enterpriseId, startDate, endDate, documentTypesIds, documentStates, productsIds);
+            var response = _microserviceService.GetProductsSummary(espId, startDate, endDate, documentTypesIds, documentStates, productsIds);
             return Ok(response);
         }
     }
