@@ -22,7 +22,7 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             _headerContextService = headerContextService;
         }
 
-        [HttpGet("all")]
+        [HttpGet]
         public ActionResult<object> GetSuppliers([FromQuery] int espId)
         {
             var supplierInformationsList = _supplierService.Get(espId);
@@ -71,14 +71,14 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         {
             int eudId = _headerContextService.GetEudId();
             var contactPersonId = _supplierService.CreateContactPerson(espId, eudId, supplierId, dto);
-            return CreatedAtAction(nameof(GetSuppContactPersonById), new { espId = espId, supplierId = supplierId, suppContactPersonId = contactPersonId }, null);
+            return CreatedAtAction(nameof(GetSuppContactPersonById), new { espId = espId, supplierId = supplierId, suppContactPersonId = contactPersonId }, contactPersonId);
         }
 
-        [HttpDelete("{id}/contacts/{suppContactPersonId}")]
-        public ActionResult DeleteSuppContactPerson([FromQuery] int espId, [FromRoute] int id, [FromRoute] int suppContactPersonId)
+        [HttpDelete("{supplierId}/contacts/{suppContactPersonId}")]
+        public ActionResult DeleteSuppContactPerson([FromQuery] int espId, [FromRoute] int supplierId, [FromRoute] int suppContactPersonId)
         {
             int eudId = _headerContextService.GetEudId();
-            _supplierService.DeleteContactPerson(espId, eudId, id, suppContactPersonId);
+            _supplierService.DeleteContactPerson(espId, eudId, supplierId, suppContactPersonId);
             return NoContent();
         }
     }

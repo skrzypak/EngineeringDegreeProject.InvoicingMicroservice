@@ -112,7 +112,8 @@ namespace InvoicingMicroservice.Core.Services
                     scp.Email,
                     scp.PhoneNumber,
                     scp.Description
-                });
+                })
+                .FirstOrDefault();
 
             if (model is null)
             {
@@ -200,6 +201,7 @@ namespace InvoicingMicroservice.Core.Services
                     s.PostalCode,
                     s.State,
                     s.StreetAddress,
+                    s.Archive,
                 })
                 .ToList();
 
