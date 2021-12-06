@@ -33,9 +33,9 @@ namespace InvoicingMicroservice.Core.Fluent.Configurations
 
             modelBuilder.Property(d => d.Signature).HasMaxLength(300).IsRequired();
             modelBuilder.Property(d => d.Number).IsRequired();
-            modelBuilder.Property(d => d.Description).HasMaxLength(3000).IsRequired();
+            modelBuilder.Property(d => d.Description).HasMaxLength(3000).IsRequired(false);
             modelBuilder.Property(d => d.Date).IsRequired();
-            modelBuilder.Property(d => d.State).HasConversion<string>().IsRequired();
+            modelBuilder.Property(d => d.State).HasConversion<int>().IsRequired();
             modelBuilder.Property(a => a.CreatedEudId).IsRequired();
             modelBuilder.Property(a => a.LastUpdatedEudId).IsRequired(false);
             modelBuilder.Property<DateTime>("CreatedDate").HasDefaultValue<DateTime>(DateTime.Now).IsRequired();

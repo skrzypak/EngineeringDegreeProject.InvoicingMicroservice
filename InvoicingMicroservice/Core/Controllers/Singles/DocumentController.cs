@@ -28,7 +28,7 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
 
         [HttpGet]
         public ActionResult<object> Get(
-            [FromRoute] int espId,
+            [FromQuery] int espId,
             [FromQuery] int?[] suppliersId,
             [FromQuery] int?[] docTypeIds,
             [FromQuery] DocumentState[] docStates,
@@ -46,10 +46,18 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return Ok(response);
         }
 
+        [HttpGet("{docId}/products")]
+        public ActionResult<object> GetDocumentProducts([FromQuery] int espId, [FromRoute] int docId)
+        {
+            var response = _documentService.GetDocumentProducts(espId, docId);
+            return Ok(response);
+        }
+
         [HttpGet("{docId}/products/{docProdId}")]
         public ActionResult GetProductById([FromQuery] int espId, [FromRoute] int docId, [FromRoute] int docProdId)
         {
-            return NoContent();
+            var response = _documentService.GetDocumentProductById(espId, docId, docProdId);
+            return Ok(response);
         }
 
         [HttpGet("types")]
@@ -66,12 +74,13 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return Ok(response);
         }
 
+
         [HttpPost]
         public async Task<ActionResult> Create([FromQuery] int espId, [FromBody] DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
             int eudId = _headerContextService.GetEudId();
             var docId = await _documentService.Create(espId, eudId, dto);
-            return CreatedAtAction(nameof(GetById), new { espId = espId, docId = docId }, null);
+            return CreatedAtAction(nameof(GetById), new { espId = espId, docId = docId }, docId);
         }
 
         [HttpPost("{docId}/products")]
@@ -79,7 +88,7 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         {
             int eudId = _headerContextService.GetEudId();
             var docProdId = await _documentService.AddProduct(espId, eudId, docId, dto);
-            return CreatedAtAction(nameof(GetProductById), new { espId = espId, docId = docId, docProdId = docProdId }, null);
+            return CreatedAtAction(nameof(GetProductById), new { espId = espId, docId = docId, docProdId = docProdId }, docProdId);
         }
 
         [HttpPost("types")]

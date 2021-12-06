@@ -197,11 +197,8 @@ namespace InvoicingMicroservice.Core.Services
                     s.Email,
                     s.Nip,
                     s.PhoneNumber,
-                    s.City,
-                    s.PostalCode,
-                    s.State,
-                    s.StreetAddress,
                     s.Archive,
+                    s.Homepage
                 })
                 .ToList();
 

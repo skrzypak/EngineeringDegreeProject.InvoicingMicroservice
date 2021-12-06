@@ -21,5 +21,7 @@ namespace InvoicingMicroservice.Core.Interfaces.Services
         public void DeleteDocumentType(int espId, int eudId, int docTypeId);
         public object GetDocumentTypeById(int espId, int docTypeId);
         public object GetDocumentsTypes(int espId);
+        public object GetDocumentProducts(int espId, int docId);
+        public object GetDocumentProductById(int espId, int docId, int docProdId);
     }
 }

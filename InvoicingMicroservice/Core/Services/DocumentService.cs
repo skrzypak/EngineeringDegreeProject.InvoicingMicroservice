@@ -288,33 +288,74 @@ namespace InvoicingMicroservice.Core.Services
                     d.Number,
                     d.Description,
                     d.Date,
-                    d.DocumentType,
-                    DocumentProducts = d.DocumentsToProducts.Select(dtp => new
-                    {
-                        dtp.Id,
-                        dtp.Quantity,
-                        dtp.UnitMeasureValue,
-                        dtp.UnitNetPrice,
-                        dtp.PercentageVat,
-                        dtp.NetValue,
-                        dtp.VatValue,
-                        dtp.GrossValue,
-                        dtp.Transfered,
-                        Product = new
-                        {
-                            dtp.Product.Id,
-                            dtp.Product.Code,
-                            dtp.Product.Name,
-                            dtp.Product.Unit,
-                            dtp.Product.Description
-                        }
-                    })
+                    documentTypeId = d.DocumentType.Id,
+                    d.State
                 })
                 .FirstOrDefault();
 
             if(dto is null)
             {
                 throw new NotFoundException($"Document with id {dto.Id} NOT FOUND");
+            }
+
+            return dto;
+        }
+
+        public object GetDocumentProducts(int espId, int docId) 
+        {
+            var dtos = _context.DocumentToProducts
+                .AsNoTracking()
+                .Include(dtp => dtp.Product)
+                .Where(dtp => dtp.EspId == espId && dtp.DocumentId == docId)
+                .Select(dtp => new
+                {
+                    dtp.Id,
+                    dtp.Quantity,
+                    dtp.UnitMeasureValue,
+                    dtp.PercentageVat,
+                    dtp.GrossValue,
+                    dtp.Transfered,
+                    ExpirationDate = dtp.ExpirationDate == null ? null : dtp.ExpirationDate.Value.Date.ToString("dd/MM/yyyy"),
+                    Product = new
+                    {
+                        dtp.Product.Id,
+                        dtp.Product.Code,
+                        dtp.Product.Name,
+                        dtp.Product.Unit,
+                    }
+                })
+                .OrderBy(dtp => dtp.Product.Name)
+                .ToList();
+
+            return dtos;
+        }
+
+        public object GetDocumentProductById(int espId, int docId, int docProdId)
+        {
+            var dto = _context.DocumentToProducts
+                .AsNoTracking()
+                .Include(dtp => dtp.Product)
+                .Where(dtp => dtp.Id == docProdId && dtp.EspId == espId && dtp.DocumentId == docId)
+                .Select(dtp => new
+                {
+                    dtp.Id,
+                    dtp.ProductId,
+                    dtp.Product.Unit,
+                    dtp.Quantity,
+                    dtp.UnitMeasureValue,
+                    dtp.UnitNetPrice,
+                    dtp.PercentageVat,
+                    dtp.NetValue,
+                    dtp.VatValue,
+                    dtp.GrossValue,
+                    dtp.ExpirationDate,
+                    dtp.Transfered,
+                })
+                .FirstOrDefault();
+
+            if (dto is null)
+            {
+                throw new NotFoundException($"Document with id {docId} not has product with id {docProdId} NOT FOUND");
             }
 
             return dto;
@@ -358,16 +399,16 @@ namespace InvoicingMicroservice.Core.Services
             var dtos = query.Select(d => new
                 {
                     d.Id,
-                    d.SupplierId,
+                    d.Supplier,
                     d.Signature,
                     d.Number,
                     d.DocumentType,
                     d.State,
-                    d.Date,
-                    d.Description,
+                    date = d.Date.ToString("dd/MM/yyyy"),
+                    d.Description
                 })
             .ToList()
-            .OrderByDescending(dx => dx.Date);
+            .OrderByDescending(dx => dx.date);
 
             if (dtos is null)
             {
