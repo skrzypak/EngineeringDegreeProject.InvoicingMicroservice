@@ -102,7 +102,7 @@ namespace InvoicingMicroservice.Core.Services
                                 .AddItem(model, CRUD.Create)
                                 .Build();
 
-                            await SyncAsync(message, CRUD.Update);
+                            await SyncAsync(message, CRUD.Create);
 
                             model.Transfered = true;
                             await _context.SaveChangesAsync();
@@ -211,9 +211,11 @@ namespace InvoicingMicroservice.Core.Services
 
             _context.DocumentToProducts.Remove(model);
 
-            if (hardReset && model.Transfered == true)
+            if (hardReset && model.Transfered)
             {
                 var message = InventoryPayloadValue.Builder
+                    .EnterpriseId(espId)
+                    .EnterpriseUserDomainId(eudId)
                     .InvoicingSupplierId(model.Document.SupplierId)
                     .InvoicingDocumentId(model.DocumentId)
                     .AddItem(model, CRUD.Delete)
@@ -252,7 +254,7 @@ namespace InvoicingMicroservice.Core.Services
                 .AddItem(model, CRUD.Create)
                 .Build();
 
-            await SyncAsync(message, CRUD.Update);
+            await SyncAsync(message, CRUD.Create);
 
             model.Transfered = true;
             _context.DocumentToProducts.Update(model);

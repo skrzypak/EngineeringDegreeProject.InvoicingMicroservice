@@ -177,17 +177,21 @@ namespace InvoicingMicroservice.Core.Services
                     TotalVatValue = group.Sum(g => g.Products.Sum(p => p.VatValue)),
                     TotalGrossValue = group.Sum(g => g.Products.Sum(p => p.GrossValue)),
                     Products = group.SelectMany(x =>
-                        x.Products.GroupBy(px => new { px.ProductId, px.Code, px.Name }).Select(d2px => new
+                        x.Products.GroupBy(px => new { px.ProductId, px.Code, px.Name, px.Unit }).Select(d2px => new
                         {
                             d2px.Key,
-                            Units = d2px.GroupBy(ux => new { ux.Unit, ux.UnitMeasureValue }).Select(uxg => new
+                            Units = d2px.GroupBy(ux => new { ux.UnitMeasureValue }).Select(uxg => new
                             {
                                 uxg.Key,
                                 ProductQuantity = uxg.Sum(g => g.Quantity),
                                 ProductNetValue = uxg.Sum(g => g.NetValue),
                                 ProductVatValue = uxg.Sum(g => g.VatValue),
                                 ProductGrossValue = uxg.Sum(g => g.GrossValue),
-                            })
+                            }),
+                            totalMeasureUnitValue = d2px.Sum(g => g.UnitMeasureValue),
+                            totalNetValue = d2px.Sum(g => g.NetValue),
+                            totaltVatValue = d2px.Sum(g => g.VatValue),
+                            totalGrossValue = d2px.Sum(g => g.GrossValue)
                         }).ToList()
                     )
                 }).ToList();

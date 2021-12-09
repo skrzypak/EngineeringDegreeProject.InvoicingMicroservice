@@ -89,7 +89,7 @@ namespace Comunication.Shared.PayloadValue
                         UnitNetPrice = model.UnitNetPrice,
                         PercentageVat = model.PercentageVat,
                         GrossValue = model.GrossValue,
-                        ExpirationDate = DateTime.MaxValue,
+                        ExpirationDate = model.ExpirationDate,
                         Crud = crud
                     });
                 }
