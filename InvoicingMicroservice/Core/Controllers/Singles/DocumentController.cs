@@ -74,13 +74,20 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return Ok(response);
         }
 
-
         [HttpPost]
         public async Task<ActionResult> Create([FromQuery] int espId, [FromBody] DocumentCoreDto<int, DocumentToProductCoreDto<int>, int> dto)
         {
             int eudId = _headerContextService.GetEudId();
             var docId = await _documentService.Create(espId, eudId, dto);
             return CreatedAtAction(nameof(GetById), new { espId = espId, docId = docId }, docId);
+        }
+
+        [HttpPatch("{docId}")]
+        public ActionResult Update([FromQuery] int espId, [FromBody] DocumentUpdateDto dto)
+        {
+            int eudId = _headerContextService.GetEudId();
+            _documentService.Update(espId, eudId, dto);
+            return NoContent();
         }
 
         [HttpPost("{docId}/products")]
@@ -90,6 +97,7 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             var docProdId = await _documentService.AddProduct(espId, eudId, docId, dto);
             return CreatedAtAction(nameof(GetProductById), new { espId = espId, docId = docId, docProdId = docProdId }, docProdId);
         }
+
 
         [HttpPost("types")]
         public ActionResult CreateDocumentType([FromQuery] int espId, [FromBody] DocumentTypeCoreDto dto)
@@ -136,6 +144,14 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
         {
             int eudId = _headerContextService.GetEudId();
             _documentService.DeleteDocumentType(espId, eudId, docTypeId);
+            return NoContent();
+        }
+
+        [HttpPut("types")]
+        public ActionResult UpdateDocumentType([FromQuery] int espId, [FromBody] DocumentTypeDto<int> dto)
+        {
+            int eudId = _headerContextService.GetEudId();
+            _documentService.UpdateDocumentType(espId, eudId, dto);
             return NoContent();
         }
 

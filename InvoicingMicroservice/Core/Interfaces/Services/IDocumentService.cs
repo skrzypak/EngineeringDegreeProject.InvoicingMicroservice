@@ -23,5 +23,7 @@ namespace InvoicingMicroservice.Core.Interfaces.Services
         public object GetDocumentsTypes(int espId);
         public object GetDocumentProducts(int espId, int docId);
         public object GetDocumentProductById(int espId, int docId, int docProdId);
+        void UpdateDocumentType(int espId, int eudId, DocumentTypeDto<int> dto);
+        void Update(int espId, int eudId, DocumentUpdateDto dto);
     }
 }

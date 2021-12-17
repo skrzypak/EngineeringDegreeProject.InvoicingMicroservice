@@ -71,6 +71,23 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
+        public void UpdateDocumentType(int espId, int eudId, DocumentTypeDto<int> dto)
+        {
+            var model = _context.DocumentsTypes
+                .FirstOrDefault(d => d.EspId == espId && d.Id == dto.Id);
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Document type with id {dto.Id} NOT FOUND");
+            }
+
+            model.Code = dto.Code;
+            model.Name = dto.Name;
+            model.Description = dto.Description;
+
+            _context.SaveChanges();
+        }
+
         public async Task<int> AddProduct(int espId, int eudId, int docId, DocumentToProductCoreDto<int> dto)
         {
             var model = _mapper.Map<DocumentToProductCoreDto<int>, DocumentToProduct>(dto);
@@ -171,6 +188,28 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
+        public void Update(int espId, int eudId, DocumentUpdateDto dto)
+        {
+            var model = _context.Documents
+                .Where(d => d.EspId == espId && d.Id == dto.Id)
+                .FirstOrDefault();
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Document with id {dto.Id} NOT FOUND");
+            }
+
+            model.Signature = dto.Signature;
+            model.Number = dto.Number;
+            model.DocumentTypeId = dto.Type;
+            model.Date = dto.Date;
+            model.State = dto.State;
+            model.Description = dto.Description;
+            model.LastUpdatedEudId = eudId;
+
+            _context.SaveChanges();
+        }
+
         public async Task Delete(int espId, int eudId, int docId, bool hardReset)
         {
             var model = _context.Documents
@@ -190,6 +229,7 @@ namespace InvoicingMicroservice.Core.Services
                     .InvoicingDocumentId(model.Id)
                     .EnterpriseId(espId)
                     .EnterpriseUserDomainId(eudId)
+                    .AddItems(model.DocumentsToProducts, CRUD.Delete)
                     .Build();
 
                 await SyncAsync(message, CRUD.Delete);
@@ -494,6 +534,5 @@ namespace InvoicingMicroservice.Core.Services
                 s_cts.Dispose();
             }
         }
-
     }
 }

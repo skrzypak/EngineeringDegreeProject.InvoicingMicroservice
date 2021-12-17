@@ -78,7 +78,7 @@ namespace Comunication.Shared.PayloadValue
 
             public InventoryPayloadValueBuilder AddItem(DocumentToProduct model, CRUD crud)
             {
-                if (model.Transfered == false)
+                if ((model.Transfered == false && crud == CRUD.Create) || (model.Transfered && (crud == CRUD.Update || crud == CRUD.Delete)))
                 {
                     this.items.Add(new ItemsPayloadValue()
                     {

@@ -39,6 +39,36 @@ namespace InvoicingMicroservice.Core.Services
             return model.Id;
         }
 
+        public void UpdateSupplier(int espId, int eudId, int supplierId, SupplierDto<SupplierContactPersonDto<int>> dto)
+        {
+
+            var model = _context.Suppliers.Where(s => s.Id == dto.Id && s.EspId == espId).FirstOrDefault();
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Supplier with ID {dto.Id} NOT FOUND");
+            }
+
+            model.Nip = dto.Nip;
+            model.Code = dto.Code;
+            model.CompanyName = dto.CompanyName;
+            model.Krs = dto.Krs;
+            model.Regon = dto.Regon;
+            model.Email = dto.Email;
+            model.PhoneNumber = dto.PhoneNumber;
+            model.StreetAddress = dto.StreetAddress;
+            model.PostalCode = dto.PostalCode;
+            model.City = dto.City;
+            model.State = dto.State;
+            model.Fax = dto.Fax;
+            model.Homepage = dto.Homepage;
+            model.Archive = dto.Archive;
+            model.Description = dto.Description;
+
+            _context.SaveChanges();
+
+        }
+
         public int CreateContactPerson(int espId, int eudId, int suppId, SupplierContactPersonCoreDto dto)
         {
             var model = _mapper.Map<SupplierContactPersonCoreDto, SupplierContactPerson>(dto);
@@ -50,6 +80,27 @@ namespace InvoicingMicroservice.Core.Services
             _context.SaveChanges();
 
             return model.Id;
+        }
+
+        public void UpdateContactPerson(int espId, int eudId, int supplierId, SupplierContactPersonDto<int> dto)
+        {
+            var model = _context.SuppliersContactsPersons
+                .Where(scp => scp.EspId == espId && scp.SupplierId == supplierId && scp.Id == dto.Id)
+                .FirstOrDefault();
+
+            if (model is null)
+            {
+                throw new NotFoundException($"Contact person NOT FOUND");
+            }
+
+
+            model.FirstName = dto.FirstName;
+            model.LastName = dto.LastName;
+            model.Email = dto.Email;
+            model.PhoneNumber = dto.PhoneNumber;
+            model.Description = dto.Description;
+
+            _context.SaveChanges();
         }
 
         public void Delete(int espId, int eudId, int supplierId)

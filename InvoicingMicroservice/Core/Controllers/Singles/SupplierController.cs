@@ -44,6 +44,14 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             return CreatedAtAction(nameof(GetSupplierById), new { espId = espId,  supplierId = supplierId }, null);
         }
 
+        [HttpPatch("{supplierId}")]
+        public ActionResult UpdateSupplier([FromQuery] int espId, [FromRoute] int supplierId, [FromBody] SupplierDto<SupplierContactPersonDto<int>> dto)
+        {
+            int eudId = _headerContextService.GetEudId();
+            _supplierService.UpdateSupplier(espId, eudId, supplierId, dto);
+            return NoContent();
+        }
+
         [HttpDelete("{supplierId}")]
         public ActionResult DeleteSupplier([FromQuery] int espId, [FromRoute] int supplierId)
         {
@@ -72,6 +80,14 @@ namespace InvoicingMicroservice.Core.Controllers.Singles
             int eudId = _headerContextService.GetEudId();
             var contactPersonId = _supplierService.CreateContactPerson(espId, eudId, supplierId, dto);
             return CreatedAtAction(nameof(GetSuppContactPersonById), new { espId = espId, supplierId = supplierId, suppContactPersonId = contactPersonId }, contactPersonId);
+        }
+
+        [HttpPut("{supplierId}/contacts")]
+        public ActionResult UpdateContactPerson([FromQuery] int espId, [FromRoute] int supplierId, [FromBody] SupplierContactPersonDto<int> dto)
+        {
+            int eudId = _headerContextService.GetEudId();
+           _supplierService.UpdateContactPerson(espId, eudId, supplierId, dto);
+            return NoContent();
         }
 
         [HttpDelete("{supplierId}/contacts/{suppContactPersonId}")]
