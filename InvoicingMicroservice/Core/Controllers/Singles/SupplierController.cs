@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace InvoicingMicroservice.Core.Controllers.Singles
 {
     [ApiController]
-    [Route("/api/invoicing/1.0.0/suppliers")]
+    [Route("/api/purchases/1.0.0/suppliers")]
     public class SupplierController : ControllerBase
     {
         private readonly ILogger<SupplierController> _logger;

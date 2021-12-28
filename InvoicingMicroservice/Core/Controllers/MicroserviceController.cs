@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace MicroserviceController.Core.Controllers
 {
     [ApiController]
-    [Route("/api/invoicing/1.0.0/msv")]
+    [Route("/api/purchases/1.0.0/msv")]
     public class MicroserviceController : ControllerBase
     {
         private readonly ILogger<MicroserviceController> _logger;

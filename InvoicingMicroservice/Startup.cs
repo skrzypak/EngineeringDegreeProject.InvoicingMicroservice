@@ -81,7 +81,7 @@ namespace InvoicingMicroservice
             #region swagger
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "EDP-INVOICING-MSV", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "EDP-PURCHASES-MSV", Version = "v1" });
             });
             #endregion
 
@@ -99,7 +99,7 @@ namespace InvoicingMicroservice
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EDP-INVOICING-MSV");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EDP-PURCHASES-MSV");
                     c.RoutePrefix = string.Empty;
                 });
             }

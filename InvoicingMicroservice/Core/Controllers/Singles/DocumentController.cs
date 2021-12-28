@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace InvoicingMicroservice.Core.Controllers.Singles
 {
     [ApiController]
-    [Route("/api/invoicing/1.0.0/documents")]
+    [Route("/api/purchases/1.0.0/documents")]
     public class DocumentController : ControllerBase
     {
         private readonly ILogger<DocumentController> _logger;
