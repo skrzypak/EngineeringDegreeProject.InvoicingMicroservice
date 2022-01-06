@@ -109,9 +109,7 @@ namespace InvoicingMicroservice.Core.Services
                             .Include(dtp => dtp.Document)
                             .First(dtp => dtp.EspId == espId && dtp.Id == model.Id);
 
-                        if (dto.Transfered == false)
-                        {
-                            var message = InventoryPayloadValue.Builder
+                        var message = InventoryPayloadValue.Builder
                                 .InvoicingSupplierId(model.Document.SupplierId)
                                 .InvoicingDocumentId(model.DocumentId)
                                 .EnterpriseId(espId)
@@ -119,11 +117,10 @@ namespace InvoicingMicroservice.Core.Services
                                 .AddItem(model, CRUD.Create)
                                 .Build();
 
-                            await SyncAsync(message, CRUD.Create);
+                        await SyncAsync(message, CRUD.Create);
 
-                            model.Transfered = true;
-                            await _context.SaveChangesAsync();
-                        }
+                        model.Transfered = true;
+                        await _context.SaveChangesAsync();
 
                         transaction.Commit();
                     }
